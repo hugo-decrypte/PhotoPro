@@ -1,0 +1,77 @@
+networks:
+  photopro.net:
+    driver: bridge
+
+services:
+  api.photopro:
+    image: php:8.5-cli
+    working_dir: /var/www
+    volumes:
+      - ./api:/var/www
+    command: sh -c "php -S 0.0.0.0:80 -t public"
+    ports:
+      - "6080:80"
+    networks:
+      - photopro.net
+    depends_on:
+      - rabbitmq
+      - seaweed-s3
+      - mailer
+
+  # SeaweedFS (S3-compatible storage)
+  seaweed-master:
+    image: chrislusf/seaweedfs:latest
+    command: "master -ip=seaweed-master -ip.bind=0.0.0.0"
+    ports:
+      - "9333:9333"
+    networks:
+      - photopro.net
+
+  seaweed-volume:
+    image: chrislusf/seaweedfs:latest
+    command: 'volume -ip=seaweed-volume -master="seaweed-master:9333" -ip.bind=0.0.0.0 -port=8080'
+    ports:
+      - "8080:8080"
+    depends_on:
+      - seaweed-master
+    networks:
+      - photopro.net
+
+  seaweed-filer:
+    image: chrislusf/seaweedfs:latest
+    command: 'filer -ip=seaweed-filer -master="seaweed-master:9333" -ip.bind=0.0.0.0'
+    ports:
+      - "8888:8888"
+    depends_on:
+      - seaweed-master
+      - seaweed-volume
+    networks:
+      - photopro.net
+
+  seaweed-s3:
+    image: chrislusf/seaweedfs:latest
+    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0'
+    ports:
+      - "8333:8333"
+    depends_on:
+      - seaweed-filer
+    networks:
+      - photopro.net
+
+  # AMQP broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - photopro.net
+
+  # SMTP dev catcher
+  mailer:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - photopro.net
