@@ -23,11 +23,34 @@ return [
     'logger.rdv.level' => \Monolog\Level::Info,
 
 
-    /////////////////////////
-    ///
-    /// Remplacer toute cette partie par les services du nouveau projet
-    ///
-    /////////////////////////
+    // --------------------------------------------------------------------------
+    // PhotoPro S3 Services
+    // --------------------------------------------------------------------------
+    's3.endpoint' => $_ENV['S3_ENDPOINT'] ?? 'http://seaweed-s3:8333',
+    's3.region'   => $_ENV['S3_REGION']   ?? 'us-east-1',
+    'S3_ACCESS_KEY' => $_ENV['S3_ACCESS_KEY'] ?? 'PHOTOPRO_ACCESS_KEY',
+    'S3_SECRET_KEY' => $_ENV['S3_SECRET_KEY'] ?? 'PHOTOPRO_SECRET_KEY',
+    's3.bucket'   => $_ENV['S3_BUCKET']     ?? 'photopro-photos',
+
+    \Aws\S3\S3Client::class => function (ContainerInterface $c) {
+        return new \Aws\S3\S3Client([
+            'version' => 'latest',
+            'region'  => $c->get('s3.region'),
+            'endpoint' => $c->get('s3.endpoint'),
+            'use_path_style_endpoint' => true,
+            'credentials' => [
+                'key'    => $c->get('S3_ACCESS_KEY'),
+                'secret' => $c->get('S3_SECRET_KEY'),
+            ],
+        ]);
+    },
+
+    \toubilib\core\services\StorageServiceInterface::class => function (ContainerInterface $c) {
+        return new \toubilib\infra\S3StorageService(
+            $c->get(\Aws\S3\S3Client::class),
+            $c->get('s3.bucket')
+        );
+    },
 
 
 //    'toubilib.praticiens.api' => 'http://api.praticien.toubilib/',
@@ -84,5 +107,5 @@ return [
 //    AuthMiddleware::class => function (ContainerInterface $container) {
 //        return new AuthMiddleware($container->get('auth.guzzle.client'));
 //    },
-//];
+];
 
