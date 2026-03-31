@@ -34,9 +34,14 @@ export const useAuthStore = defineStore('auth', () => {
     )
   }
 
-  function login(newToken, newRefreshToken = '') {
+  function setTokens(newToken, newRefreshToken = '') {
     token.value = newToken
     refreshToken.value = newRefreshToken
+    persist()
+  }
+
+  function setAccessToken(newToken) {
+    token.value = newToken
     persist()
   }
 
@@ -51,7 +56,8 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     isAuthenticated,
     loadFromStorage,
-    login,
+    setTokens,
+    setAccessToken,
     clear,
   }
 })
