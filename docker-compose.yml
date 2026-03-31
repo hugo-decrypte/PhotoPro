@@ -22,8 +22,8 @@ services:
       context: build
       dockerfile: 8.5-cli.Dockerfile
     volumes:
-      - ./app-gateway-gestion:/var/www
-    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
+      - ./api/gateway/:/var/php
+    working_dir: /var/php
     ports:
       - "6080:80"
     networks:
@@ -33,18 +33,20 @@ services:
       - seaweed-s3
       - mailer
       - app-auth
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
 
   app-auth:
     build:
       context: build
       dockerfile: 8.5-cli.Dockerfile
     volumes:
-      - ./app-auth:/var/www
-    command: sh -c "php -S 0.0.0.0:80 -t public"
+      - ./api/app-auth/:/var/php
+    working_dir: /var/php
     networks:
       - photopro.net
     depends_on:
       - photopro-auth.db
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
 
   photopro-auth.db:
     image: 'postgres:latest'
@@ -55,8 +57,8 @@ services:
     networks:
       - photopro.net
     volumes:
-      - ./sql/photopro.schema.sql:/docker-entrypoint-initdb.d/03.schema.sql
-      - ./sql/photopro.data.sql:/docker-entrypoint-initdb.d/04.data.sql
+      - ./sql/photopro-auth.schema.sql:/docker-entrypoint-initdb.d/03.schema.sql
+      - ./sql/photopro-auth.data.sql:/docker-entrypoint-initdb.d/04.data.sql
 
   # SeaweedFS (S3-compatible storage)
   seaweed-master:

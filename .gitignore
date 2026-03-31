@@ -1,0 +1,29 @@
+.idea/
+# IDE
+.vscode/
+.DS_STORE
+/coverage/
+# Vendor
+vendor/
+/vendor/
+/vendor/*
+/api_gateway/vendor/
+/app-praticiens/vendor/
+/app-rdv/vendor/
+/app-auth/vendor/
+# Logs
+/app/logs/*
+!/app/logs/README.md
+# Cache
+/var/cache/*
+.phpunit.result.cache
+cache.properties
+.php_cs.cache
+# Composer
+composer.phar
+composer.lock
+/app/vendor/
+*.env
+app-mail/vendor/
+rabbitmq.toubi/mnesia/*
+
