@@ -20,7 +20,7 @@ services:
   app-gateway-gestion:
     build:
       context: build
-      dockerfile: build/8.5-cli.Dockerfile
+      dockerfile: 8.5-cli.Dockerfile
     volumes:
       - ./app-gateway-gestion:/var/www
     command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
@@ -37,7 +37,7 @@ services:
   app-auth:
     build:
       context: build
-      dockerfile: build/8.5-cli.Dockerfile
+      dockerfile: 8.5-cli.Dockerfile
     volumes:
       - ./app-auth:/var/www
     command: sh -c "php -S 0.0.0.0:80 -t public"
