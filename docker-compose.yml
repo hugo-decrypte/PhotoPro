@@ -3,6 +3,20 @@ networks:
     driver: bridge
 
 services:
+  web.photopro:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./web/photo-pro-backoffice:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    networks:
+      - photopro.net
+    depends_on:
+      - api.photopro
+
   api.photopro:
     image: php:8.5-cli
     working_dir: /var/www
