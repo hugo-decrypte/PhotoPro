@@ -15,6 +15,11 @@ function logout() {
   <main>
     <h1>Backoffice PhotoPro</h1>
     <p>Connecte avec succes.</p>
+    <nav>
+      <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
+      <RouterLink :to="{ name: 'galleries' }">Galeries</RouterLink> |
+      <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
+    </nav>
     <button type="button" @click="logout">Se deconnecter</button>
   </main>
 </template>

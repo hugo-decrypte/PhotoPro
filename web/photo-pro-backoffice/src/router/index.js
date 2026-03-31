@@ -1,7 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import DashboardView from '../views/DashboardView.vue'
+import GalleriesView from '../views/GalleriesView.vue'
+import GalleryEditView from '../views/GalleryEditView.vue'
 import LoginView from '../views/LoginView.vue'
+import PhotosView from '../views/PhotosView.vue'
 import RegisterView from '../views/RegisterView.vue'
 
 const router = createRouter({
@@ -23,6 +26,21 @@ const router = createRouter({
       path: '/',
       name: 'dashboard',
       component: DashboardView,
+    },
+    {
+      path: '/photos',
+      name: 'photos',
+      component: PhotosView,
+    },
+    {
+      path: '/galleries',
+      name: 'galleries',
+      component: GalleriesView,
+    },
+    {
+      path: '/galleries/new',
+      name: 'gallery-new',
+      component: GalleryEditView,
     },
   ],
 })
