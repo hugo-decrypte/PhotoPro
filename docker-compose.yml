@@ -48,7 +48,10 @@ services:
 
   photopro-auth.db:
     image: 'postgres:latest'
-    env_file: ./photoauthdb.env
+    environment:
+      POSTGRES_USER: photopro
+      POSTGRES_PASSWORD: photopro
+      POSTGRES_DB: photopro
     networks:
       - photopro.net
     volumes:
