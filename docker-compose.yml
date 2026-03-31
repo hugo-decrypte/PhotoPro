@@ -3,12 +3,13 @@ networks:
     driver: bridge
 
 services:
-  api.photopro:
-    image: php:8.5-cli
-    working_dir: /var/www
+  app-gateway-gestion:
+    build:
+      context: build
+      dockerfile: build/8.5-cli.Dockerfile
     volumes:
-      - ./api:/var/www
-    command: sh -c "php -S 0.0.0.0:80 -t public"
+      - ./app-gateway-gestion:/var/www
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
     ports:
       - "6080:80"
     networks:
@@ -17,6 +18,27 @@ services:
       - rabbitmq
       - seaweed-s3
       - mailer
+
+  app-auth:
+    build:
+      context: build
+      dockerfile: build/8.5-cli.Dockerfile
+    volumes:
+      - ./app-auth:/var/www
+    command: sh -c "php -S 0.0.0.0:80 -t public"
+    networks:
+      - photopro.net
+    depends_on:
+      - photopro-auth.db
+
+  photopro-auth.db:
+    image: 'postgres:latest'
+    env_file: ./photoauthdb.env
+    networks:
+      - photopro.net
+    volumes:
+      - ./sql/photopro.schema.sql:/docker-entrypoint-initdb.d/03.schema.sql
+      - ./sql/photopro.data.sql:/docker-entrypoint-initdb.d/04.data.sql
 
   # SeaweedFS (S3-compatible storage)
   seaweed-master:
