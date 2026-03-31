@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { REQUIRE_AUTH } from '../config/auth'
 import { useAuthStore } from '../stores/auth'
 import DashboardView from '../views/DashboardView.vue'
 import GalleriesView from '../views/GalleriesView.vue'
@@ -46,6 +47,10 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  if (!REQUIRE_AUTH) {
+    return true
+  }
+
   const authStore = useAuthStore()
   authStore.loadFromStorage()
 
