@@ -2,7 +2,7 @@
 
 namespace toubilib\core\application\ports\spi\repositoryInterfaces;
 
-use toubilib\core\domain\entities\user\User;
+use auth\src\application_core\domain\entities\user\User;
 
 interface AuthRepositoryInterface
 {
