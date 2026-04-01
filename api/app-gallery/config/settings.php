@@ -8,11 +8,11 @@ return [
     'db' => [
         'toubiprat' => [
             'driver' => 'pgsql',
-            'host' => $_ENV['TOUBIPRAT_DB_HOST'] ?? 'photoproGallery.db',
+            'host' => $_ENV['TOUBIPRAT_DB_HOST'] ?? 'photopro-gallery.db',
             'port' => $_ENV['TOUBIPRAT_DB_PORT'] ?? 5432,
-            'dbname' => $_ENV['TOUBIPRAT_DB_NAME'] ?? 'photoproGallery',
-            'user' => $_ENV['TOUBIPRAT_DB_USER'] ?? 'photoproGallery',
-            'password' => $_ENV['TOUBIPRAT_DB_PASS'] ?? 'photoproGallery',
+            'dbname' => $_ENV['TOUBIPRAT_DB_NAME'] ?? 'photopro',
+            'user' => $_ENV['TOUBIPRAT_DB_USER'] ?? 'photopro',
+            'password' => $_ENV['TOUBIPRAT_DB_PASS'] ?? 'photopro',
         ]
     ],
 
