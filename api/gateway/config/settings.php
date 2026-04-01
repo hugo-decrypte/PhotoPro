@@ -3,6 +3,7 @@
 
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientInterface;
+use GuzzleHttp\Client;
 use toubilib\api\actions\GatewayAuthGeneriqueAction;
 use toubilib\api\actions\GatewayPatientGeneriqueAction;
 use toubilib\api\actions\GatewayPraticienGeneriqueAction;
@@ -53,59 +54,25 @@ return [
     },
 
 
-//    'toubilib.praticiens.api' => 'http://api.praticien.toubilib/',
-//    'toubilib.rdvs.api' => 'http://api.rdv.toubilib/',
-//    'toubilib.patients.api' => 'http://api.patient.toubilib/',
-//    'toubilib.auth.api' => 'http://api.auth.toubilib/',
+    'toubilib.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
 
 
-//    //Application
-//    'praticien.guzzle.client' => function (ContainerInterface $container) {
-//        return new GuzzleHttp\Client([
-//            'base_uri' => $container->get('toubilib.praticiens.api'),
-//        ]);
-//    },
-//    'patient.guzzle.client' => function (ContainerInterface $container) {
-//        return new GuzzleHttp\Client([
-//            'base_uri' => $container->get('toubilib.patients.api'),
-//        ]);
-//    },
-//    'rdv.guzzle.client' => function (ContainerInterface $container) {
-//        return new GuzzleHttp\Client([
-//            'base_uri' => $container->get('toubilib.rdvs.api'),
-//        ]);
-//    },
-//
-//    'auth.guzzle.client' => function (ContainerInterface $container) {
-//        return new GuzzleHttp\Client([
-//            'base_uri' => $container->get('toubilib.auth.api'),
-//        ]);
-//    },
-//
-//    GatewayPraticienGeneriqueAction::class => function (ContainerInterface $container) {
-//        return new GatewayPraticienGeneriqueAction(
-//            $container->get('praticien.guzzle.client')
-//        );
-//    },
-//    GatewayPatientGeneriqueAction::class => function (ContainerInterface $container) {
-//        return new GatewayPatientGeneriqueAction(
-//            $container->get('patient.guzzle.client')
-//        );
-//    },
-//    GatewayRdvGeneriqueAction::class => function (ContainerInterface $container) {
-//        return new GatewayRdvGeneriqueAction(
-//            $container->get('rdv.guzzle.client')
-//        );
-//    },
-//
-//    GatewayAuthGeneriqueAction::class => function (ContainerInterface $container) {
-//        return new GatewayAuthGeneriqueAction(
-//            $container->get('auth.guzzle.client')
-//        );
-//    },
-//
-//    AuthMiddleware::class => function (ContainerInterface $container) {
-//        return new AuthMiddleware($container->get('auth.guzzle.client'));
-//    },
+    'auth.guzzle.client' => function (ContainerInterface $container) {
+        return new Client([
+            'base_uri' => $container->get('toubilib.auth.api'),
+            'timeout' => 10.0,
+            'http_errors' => true,
+        ]);
+    },
+
+    GatewayAuthGeneriqueAction::class => function (ContainerInterface $container) {
+        return new GatewayAuthGeneriqueAction(
+            $container->get('auth.guzzle.client')
+        );
+    },
+
+    AuthMiddleware::class => function (ContainerInterface $container) {
+        return new AuthMiddleware($container->get('auth.guzzle.client'));
+    },
 ];
 
