@@ -1,1 +1,1 @@
-export const REQUIRE_AUTH = true
+export const REQUIRE_AUTH = false
