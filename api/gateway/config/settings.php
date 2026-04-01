@@ -4,11 +4,9 @@
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientInterface;
 use GuzzleHttp\Client;
-use toubilib\api\actions\GatewayAuthGeneriqueAction;
-use toubilib\api\actions\GatewayPatientGeneriqueAction;
-use toubilib\api\actions\GatewayPraticienGeneriqueAction;
-use toubilib\api\actions\GatewayRdvGeneriqueAction;
-use toubilib\api\middlewares\AuthMiddleware;
+use photopro\api\actions\GatewayAuthGeneriqueAction;
+use photopro\api\actions\GatewayGalleryGeneriqueAction;
+use photopro\api\middlewares\AuthMiddleware;
 
 
 return [
@@ -46,20 +44,29 @@ return [
         ]);
     },
 
-    \toubilib\core\services\StorageServiceInterface::class => function (ContainerInterface $c) {
-        return new \toubilib\infra\S3StorageService(
+    \photopro\core\services\StorageServiceInterface::class => function (ContainerInterface $c) {
+        return new \photopro\infra\S3StorageService(
             $c->get(\Aws\S3\S3Client::class),
             $c->get('s3.bucket')
         );
     },
 
 
-    'toubilib.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
+    'photopro.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
+    'photopro.gallery.api' => $_ENV['GALLERY_API_URL'] ?? 'http://app-gallery:80',
 
 
     'auth.guzzle.client' => function (ContainerInterface $container) {
         return new Client([
-            'base_uri' => $container->get('toubilib.auth.api'),
+            'base_uri' => $container->get('photopro.auth.api'),
+            'timeout' => 10.0,
+            'http_errors' => true,
+        ]);
+    },
+
+    'gallery.guzzle.client' => function (ContainerInterface $container) {
+        return new Client([
+            'base_uri' => $container->get('photopro.gallery.api'),
             'timeout' => 10.0,
             'http_errors' => true,
         ]);
@@ -68,6 +75,11 @@ return [
     GatewayAuthGeneriqueAction::class => function (ContainerInterface $container) {
         return new GatewayAuthGeneriqueAction(
             $container->get('auth.guzzle.client')
+        );
+    },
+    GatewayGalleryGeneriqueAction::class => function (ContainerInterface $container) {
+        return new GatewayGalleryGeneriqueAction(
+            $container->get('gallery.guzzle.client')
         );
     },
 

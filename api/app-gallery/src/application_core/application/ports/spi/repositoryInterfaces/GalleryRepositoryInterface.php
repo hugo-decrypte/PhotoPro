@@ -22,4 +22,8 @@ interface GalleryRepositoryInterface
     public function unpublishGallery(string $galleryId): void;
 
     public function countPhotos(string $galleryId): int;
+
+    public function addComment(array $commentData): array;
+
+    public function findCommentsByGalleryId(string $galleryId): array;
 }
