@@ -1,0 +1,50 @@
+=============== Apr 1, 2026 (UTC) ===============
+13:39:18.064325 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:39:18.125414 db@open opening
+13:39:18.138443 version@stat F·[] S·0B[] Sc·[]
+13:39:18.145452 db@janitor F·2 G·0
+13:39:18.145796 db@open done T·20.033547ms
+13:59:15.487107 db@close closing
+13:59:15.494290 db@close done T·8.973658ms
+=============== Apr 1, 2026 (UTC) ===============
+13:59:26.176452 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:59:26.229219 version@stat F·[] S·0B[] Sc·[]
+13:59:26.231494 db@open opening
+13:59:26.234345 journal@recovery F·1
+13:59:26.235559 journal@recovery recovering @1
+13:59:26.244406 version@stat F·[] S·0B[] Sc·[]
+13:59:26.290623 db@janitor F·2 G·0
+13:59:26.290937 db@open done T·59.073932ms
+14:39:13.382107 db@close closing
+14:39:13.395724 db@close done T·16.747093ms
+=============== Apr 1, 2026 (UTC) ===============
+14:40:02.772568 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+14:40:02.788657 version@stat F·[] S·0B[] Sc·[]
+14:40:02.790721 db@open opening
+14:40:02.794788 journal@recovery F·1
+14:40:02.798461 journal@recovery recovering @2
+14:40:02.808247 version@stat F·[] S·0B[] Sc·[]
+14:40:02.870373 db@janitor F·2 G·0
+14:40:02.872257 db@open done T·81.049364ms
+15:19:34.952002 db@close closing
+15:19:34.964617 db@close done T·13.473018ms
+=============== Apr 1, 2026 (UTC) ===============
+15:19:55.119906 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:19:55.143261 version@stat F·[] S·0B[] Sc·[]
+15:19:55.144599 db@open opening
+15:19:55.147663 journal@recovery F·1
+15:19:55.149040 journal@recovery recovering @4
+15:19:55.154770 version@stat F·[] S·0B[] Sc·[]
+15:19:55.187927 db@janitor F·2 G·0
+15:19:55.188282 db@open done T·43.35234ms
+15:21:49.360446 db@close closing
+15:21:49.368108 db@close done T·7.499458ms
+=============== Apr 1, 2026 (UTC) ===============
+15:22:14.490432 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:22:14.505556 version@stat F·[] S·0B[] Sc·[]
+15:22:14.506730 db@open opening
+15:22:14.510907 journal@recovery F·1
+15:22:14.512669 journal@recovery recovering @6
+15:22:14.519693 version@stat F·[] S·0B[] Sc·[]
+15:22:14.557448 db@janitor F·2 G·0
+15:22:14.557773 db@open done T·50.731511ms

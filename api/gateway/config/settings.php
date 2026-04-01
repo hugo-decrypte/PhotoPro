@@ -54,6 +54,7 @@ return [
 
     'toubilib.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
     'photopro.gallery.api' => $_ENV['GALLERY_API_URL'] ?? 'http://app-gallery:80',
+    'photopro.photo.api' => $_ENV['PHOTO_API_URL'] ?? 'http://app-photo:80',
 
 
     'auth.guzzle.client' => function (ContainerInterface $container) {
@@ -72,14 +73,29 @@ return [
         ]);
     },
 
+    'photo.guzzle.client' => function (ContainerInterface $container) {
+        return new Client([
+            'base_uri' => $container->get('photopro.photo.api'),
+            'timeout' => 10.0,
+            'http_errors' => true,
+        ]);
+    },
+
     GatewayAuthGeneriqueAction::class => function (ContainerInterface $container) {
         return new GatewayAuthGeneriqueAction(
             $container->get('auth.guzzle.client')
         );
     },
+
     GatewayGalleryGeneriqueAction::class => function (ContainerInterface $container) {
         return new GatewayGalleryGeneriqueAction(
             $container->get('gallery.guzzle.client')
+        );
+    },
+
+    GatewayPhotoGeneriqueAction::class => function (ContainerInterface $container) {
+        return new GatewayPhotoGeneriqueAction(
+            $container->get('photo.guzzle.client')
         );
     },
 

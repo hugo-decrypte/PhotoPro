@@ -63,6 +63,22 @@ services:
       - photopro-gallery.db
     command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
 
+  app-photo:
+        build:
+          context: build
+          dockerfile: 8.5-cli.Dockerfile
+        volumes:
+          - ./api/app-photo:/var/php
+        working_dir: /var/php
+        ports:
+          - "6082:80"
+        networks:
+          - photopro.net
+        depends_on:
+          - photopro-photo.db
+          - seaweed-s3
+        command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
+
   photopro-gallery.db:
     image: postgres:latest
     environment:
@@ -96,6 +112,7 @@ services:
       - photopro.net
     volumes:
       - ./sql/photopro-photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
+      - ./sql/photopro-photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 
   adminer:
     image: adminer
