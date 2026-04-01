@@ -6,6 +6,8 @@ use photopro\api\actions\CreateGalleryAction;
 use photopro\api\actions\AccessPrivateGalleryAction;
 use photopro\api\actions\PublishGalleryAction;
 use photopro\api\actions\unpublishGalleryAction;
+use photopro\api\actions\ListCommentsAction;
+use photopro\api\actions\AddCommentAction;
 
 return function( \Slim\App $app):\Slim\App {
 
@@ -14,6 +16,7 @@ return function( \Slim\App $app):\Slim\App {
     $app->get('/galeries/{id}/privee', AccessPrivateGalleryAction::class)->setName('gallery.private.access');
     $app->patch('/galeries/{id}/publish', PublishGalleryAction::class)->setName('gallery.publish');
     $app->patch('/galeries/{id}/unpublish', UnpublishGalleryAction::class)->setName('gallery.unpublish');
-    
+    $app->get('/galeries/{id}/comments', ListCommentsAction::class)->setName('gallery.comments.list');
+    $app->post('/galeries/{id}/photos/{photoId}/comments', AddCommentAction::class)->setName('gallery.comments.add');
     return $app;
 };
