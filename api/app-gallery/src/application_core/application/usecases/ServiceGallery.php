@@ -122,4 +122,43 @@ class ServiceGallery implements ServiceGalleryInterface
 
         $this->galleryRepository->unpublishGallery($galleryId);
     }
+
+     public function addComment(string $galleryId, string $photoId, array $data): array
+    {
+        $gallery = $this->galleryRepository->findById($galleryId);
+
+        if (!$gallery) {
+            throw new \RuntimeException('Galerie introuvable', 404);
+        }
+
+        $content = trim((string)($data['content'] ?? ''));
+        if ($content === '') {
+            throw new \InvalidArgumentException('Contenu obligatoire');
+        }
+
+        $commentId = Uuid::uuid4()->toString();
+
+        $commentData = [
+            'id' => $commentId,
+            'photo_id' => $photoId,
+            'gallery_id' => $galleryId,
+            'author_name' => $data['author_name'] ?? null,
+            'content' => $content,
+            'created_at' => date('Y-m-d H:i:s'),
+        ];
+
+        return $this->galleryRepository->addComment($commentData);
+    }
+
+    public function listComments(string $galleryId): array
+    {
+        $gallery = $this->galleryRepository->findById($galleryId);
+
+        if (!$gallery) {
+            throw new \RuntimeException('Galerie introuvable', 404);
+        }
+
+        return $this->galleryRepository->findCommentsByGalleryId($galleryId);
+    }
+
 }
