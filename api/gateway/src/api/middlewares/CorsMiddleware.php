@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace toubilib\api\middlewares;
+namespace photopro\api\middlewares;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

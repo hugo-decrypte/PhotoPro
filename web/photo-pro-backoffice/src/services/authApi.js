@@ -1,9 +1,11 @@
 import axios from 'axios'
+import { API_BASE_URL, API_TIMEOUT_MS } from '../config/api'
+import { normalizeApiError } from '../lib/apiError'
 
-const apiBaseURL = 'http://localhost:6080'
+const apiBaseURL = API_BASE_URL
 const authHttp = axios.create({
   baseURL: apiBaseURL,
-  timeout: 10000,
+  timeout: API_TIMEOUT_MS,
 })
 
 async function postFirstAvailable(candidates, payload, config) {
@@ -16,13 +18,13 @@ async function postFirstAvailable(candidates, payload, config) {
     } catch (error) {
       lastError = error
       const status = error?.response?.status
-      if (status && status !== 404) {
+      if (status && status >= 400 && status < 500 && status !== 404) {
         break
       }
     }
   }
 
-  throw lastError
+  throw normalizeApiError(lastError)
 }
 
 export async function register(payload) {

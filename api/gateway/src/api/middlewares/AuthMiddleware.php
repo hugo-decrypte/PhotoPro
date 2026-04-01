@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\api\middlewares;
+namespace photopro\api\middlewares;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;

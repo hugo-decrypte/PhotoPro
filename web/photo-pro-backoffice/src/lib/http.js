@@ -1,10 +1,12 @@
 import axios from 'axios'
+import { API_BASE_URL, API_TIMEOUT_MS } from '../config/api'
+import { normalizeApiError } from './apiError'
 import { useAuthStore } from '../stores/auth'
 import { refreshToken as refreshTokenRequest } from '../services/authApi'
 
 const http = axios.create({
-  baseURL: 'http://localhost:6080',
-  timeout: 10000,
+  baseURL: API_BASE_URL,
+  timeout: API_TIMEOUT_MS,
 })
 
 function extractTokens(data) {
@@ -44,7 +46,7 @@ export function setupHttpInterceptors() {
       const isRefreshCall = String(originalRequest.url || '').includes('/auth/refresh')
 
       if (status !== 401 || originalRequest._retry || isRefreshCall || !authStore.refreshToken) {
-        return Promise.reject(error)
+        return Promise.reject(normalizeApiError(error))
       }
 
       originalRequest._retry = true
@@ -63,7 +65,7 @@ export function setupHttpInterceptors() {
         return http(originalRequest)
       } catch (refreshError) {
         authStore.clear()
-        return Promise.reject(refreshError)
+        return Promise.reject(normalizeApiError(refreshError))
       }
     },
   )
