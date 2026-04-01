@@ -59,10 +59,10 @@ Pour lancer l'ensemble de l'infrastructure (Stockage, DB, API, Services), exécu
 docker compose up -d
 ```
 
-### 3. Initialisation du backend (Gateway)
-Après le premier lancement, installez les dépendances PHP :
+###  3. Initialisation du backend (Gateway) + Enlever le timeout lors de l'initialisation des dépendances PHP (utile pour éviter les erreurs de timeout lors de l'installation) :
+
 ```bash
-docker compose run --rm app-gateway-gestion sh -lc "cd /var/php && composer update"
+docker compose run --rm -e COMPOSER_PROCESS_TIMEOUT=0 app-gateway-gestion sh -lc "cd /var/php && composer install --no-interaction --no-progress"
 ```
 
 ### 4. Installation des outils de stockage S3
@@ -79,11 +79,8 @@ Le service est configuré dans le `docker-compose.yml`.
 *   **Interface d'état** : `http://localhost:9333` (Master status).
 *   **Filer (Explorateur)** : `http://localhost:8888` (pour voir les fichiers stockés).
 
-////////////////////////////////////
 
-A compléter
 
-///////////////////////////////////
 
 ## Contexte
 SAE Atelier-Projet de Développement Web 2 — BUT 3 Informatique DWM

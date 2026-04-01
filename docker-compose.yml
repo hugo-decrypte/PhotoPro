@@ -33,8 +33,11 @@ services:
       - seaweed-s3
       - mailer
       - app-auth
+      - app-gallery
+      - app-photo
     command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
 
+  # ── Auth ──────────────────────────────────────────────────────────────────
   app-auth:
     build:
       context: build
@@ -48,21 +51,47 @@ services:
       - photopro-auth.db
     command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
 
+  photopro-auth.db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: photopro
+      POSTGRES_PASSWORD: photopro
+      POSTGRES_DB: photopro_auth
+    networks:
+      - photopro.net
+    volumes:
+      - photopro_auth_data:/var/lib/postgresql/data
+      - ./sql/auth/01_photopro_auth.schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./sql/auth/02_photopro_auth.data.sql:/docker-entrypoint-initdb.d/02_data.sql
+
+  # ── Gallery ───────────────────────────────────────────────────────────────
   app-gallery:
     build:
       context: build
       dockerfile: 8.5-cli.Dockerfile
     volumes:
-      - ./api/app-gallery:/var/php
+      - ./api/app-gallery/:/var/php
     working_dir: /var/php
-    ports:
-      - "6081:80"
     networks:
       - photopro.net
     depends_on:
       - photopro-gallery.db
-    command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
 
+  photopro-gallery.db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: photopro
+      POSTGRES_PASSWORD: photopro
+      POSTGRES_DB: photopro_gallery
+    networks:
+      - photopro.net
+    volumes:
+      - photopro_gallery_data:/var/lib/postgresql/data
+      - ./sql/gallery/01_photopro_gallery.schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./sql/gallery/02_photopro_gallery.data.sql:/docker-entrypoint-initdb.d/02_data.sql
+
+  # ── Photo ─────────────────────────────────────────────────────────────────
   app-photo:
         build:
           context: build
@@ -79,50 +108,19 @@ services:
           - seaweed-s3
         command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
 
-  photopro-gallery.db:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: photopro
-      POSTGRES_PASSWORD: photopro
-      POSTGRES_DB: photopro
-    networks:
-      - photopro.net
-    volumes:
-      - ./sql/photopro-gallery.schema.sql:/docker-entrypoint-initdb.d/03.schema.sql
-
-  photopro-auth.db:
-    image: 'postgres:latest'
-    environment:
-      POSTGRES_USER: photopro
-      POSTGRES_PASSWORD: photopro
-      POSTGRES_DB: photopro
-    networks:
-      - photopro.net
-    volumes:
-      - ./sql/photopro-auth.schema.sql:/docker-entrypoint-initdb.d/03.schema.sql
-      - ./sql/photopro-auth.data.sql:/docker-entrypoint-initdb.d/04.data.sql
-
   photopro-photo.db:
-    image: 'postgres:latest'
+    image: postgres:16
     environment:
       POSTGRES_USER: photopro
       POSTGRES_PASSWORD: photopro
-      POSTGRES_DB: photopro
+      POSTGRES_DB: photopro_photo
     networks:
       - photopro.net
     volumes:
       - ./sql/photopro-photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
       - ./sql/photopro-photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 
-  adminer:
-    image: adminer
-    ports:
-      - '8081:8081'
-    networks:
-      - photopro.net
-    command: php -S 0.0.0.0:8081 -t /var/www/html
-
-  # SeaweedFS (S3-compatible storage)
+  # ── SeaweedFS ─────────────────────────────────────────────────────────────
   seaweed-master:
     image: chrislusf/seaweedfs:latest
     command: "master -ip=seaweed-master -ip.bind=0.0.0.0"
@@ -130,8 +128,6 @@ services:
       - "9333:9333"
     networks:
       - photopro.net
-    volumes:
-      - ./S3/data:/data
 
   seaweed-volume:
     image: chrislusf/seaweedfs:latest
@@ -142,8 +138,6 @@ services:
       - seaweed-master
     networks:
       - photopro.net
-    volumes:
-      - ./S3/data:/data
 
   seaweed-filer:
     image: chrislusf/seaweedfs:latest
@@ -155,23 +149,31 @@ services:
       - seaweed-volume
     networks:
       - photopro.net
-    volumes:
-      - ./S3/data:/data
 
   seaweed-s3:
     image: chrislusf/seaweedfs:latest
-    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0 -s3.config=/etc/seaweedfs/s3.json'
+    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0'
     ports:
       - "8333:8333"
     depends_on:
       - seaweed-filer
     networks:
       - photopro.net
-    volumes:
-      - ./S3/s3.json:/etc/seaweedfs/s3.json
-      - ./S3/data:/data
 
-  # AMQP broker
+# ── Adminer ────────────────────────────────────────────────────────────────
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8081:8081"
+    networks:
+      - photopro.net
+    depends_on:
+      - photopro-auth.db
+      - photopro-gallery.db
+      - photopro-photo.db
+    command: php -S 0.0.0.0:8081 -t /var/www/html
+
+  # ── Broker ────────────────────────────────────────────────────────────────
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -180,7 +182,7 @@ services:
     networks:
       - photopro.net
 
-  # SMTP dev catcher
+  # ── Mailer ────────────────────────────────────────────────────────────────
   mailer:
     image: axllent/mailpit:latest
     ports:
@@ -188,3 +190,8 @@ services:
       - "1025:1025"
     networks:
       - photopro.net
+
+volumes:
+  photopro_auth_data:
+  photopro_gallery_data:
+  photopro_photo_data:
