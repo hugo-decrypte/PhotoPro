@@ -6,6 +6,7 @@ namespace toubilib\api;
 use Slim\App;
 use photopro\api\actions\GatewayAuthGeneriqueAction;
 use photopro\api\actions\GatewayPhotoGeneriqueAction;
+use photopro\api\actions\GatewayGalleryGeneriqueAction;
 
 return function(App $app): App {
 
@@ -28,6 +29,10 @@ return function(App $app): App {
 
     $app->post('/tokens/validate', GatewayAuthGeneriqueAction::class . ':validateToken')
         ->setName('api_auth_validate_token');
+
+    // Route pour les gallery
+    $app->get('/galeries', GatewayGalleryGeneriqueAction::class . ':getGallery')
+        ->setName('api_gallery_get_gallery');
 
     // Routes pour les photos
     $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto')

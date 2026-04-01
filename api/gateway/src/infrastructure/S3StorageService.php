@@ -1,10 +1,10 @@
 <?php
-namespace toubilib\infra;
+namespace photopro\infra;
 
 use Aws\S3\S3Client;
 use Psr\Http\Message\StreamInterface;
 use Ramsey\Uuid\Uuid;
-use toubilib\core\services\StorageServiceInterface;
+use photopro\core\services\StorageServiceInterface;
 
 class S3StorageService implements StorageServiceInterface
 {

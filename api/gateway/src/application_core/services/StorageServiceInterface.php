@@ -1,5 +1,5 @@
 <?php
-namespace toubilib\core\services;
+namespace photopro\core\services;
 
 use Psr\Http\Message\StreamInterface;
 
