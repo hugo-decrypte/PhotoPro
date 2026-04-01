@@ -196,4 +196,52 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
 
         return (int) $stmt->fetchColumn();
     }
+
+   public function addComment(array $commentData): array
+    {
+    $stmt = $this->pdo->prepare("
+        INSERT INTO comments (
+            id,
+            photo_id,
+            gallery_id,
+            author_name,
+            content,
+            created_at
+        ) VALUES (
+            :id,
+            :photo_id,
+            :gallery_id,
+            :author_name,
+            :content,
+            :created_at
+        )
+    ");
+
+    $stmt->execute($commentData);
+
+    return $commentData;
+}
+
+public function findCommentsByGalleryId(string $galleryId): array
+{
+    $stmt = $this->pdo->prepare("
+        SELECT
+            id,
+            photo_id,
+            gallery_id,
+            author_name,
+            content,
+            created_at
+        FROM comments
+        WHERE gallery_id = :gallery_id
+        ORDER BY created_at DESC
+    ");
+
+    $stmt->execute([
+        'gallery_id' => $galleryId,
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    }
 }

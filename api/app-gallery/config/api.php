@@ -5,7 +5,10 @@ use photopro\api\actions\CreateGalleryAction;
 use photopro\api\actions\AccessPrivateGalleryAction;
 use photopro\api\actions\PublishGalleryAction;
 use photopro\api\actions\UnpublishGalleryAction;
+use photopro\api\actions\ListCommentsAction;
+use photopro\api\actions\AddCommentAction;
 use photopro\core\application\ports\api\ServiceGalleryInterface;
+
 
 return [
     ListeGalleryAction::class => function ($c) {
@@ -34,6 +37,17 @@ return [
 
     UnpublishGalleryAction::class => function ($c) {
         return new UnpublishGalleryAction(
+            $c->get(ServiceGalleryInterface::class)
+        );
+    },
+    ListCommentsAction::class => function ($c) {
+    return new ListCommentsAction(
+        $c->get(ServiceGalleryInterface::class)
+    );
+    },
+
+    AddCommentAction::class => function ($c) {
+        return new AddCommentAction(
             $c->get(ServiceGalleryInterface::class)
         );
     },
