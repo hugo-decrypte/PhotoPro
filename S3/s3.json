@@ -1,0 +1,33 @@
+{
+    "identities": [
+        {
+            "name": "admin",
+            "actions": [
+                "Read",
+                "Write",
+                "List",
+                "Admin"
+            ],
+            "credentials": [
+                {
+                    "accessKey": "PHOTOPRO_ADMIN_KEY",
+                    "secretKey": "SECRET_PHOTOPRO_ADMIN"
+                }
+            ]
+        },
+        {
+            "name": "photopro_app",
+            "actions": [
+                "Read",
+                "Write",
+                "List"
+            ],
+            "credentials": [
+                {
+                    "accessKey": "PHOTOPRO_ACCESS_KEY",
+                    "secretKey": "PHOTOPRO_SECRET_KEY"
+                }
+            ]
+        }
+    ]
+}

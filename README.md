@@ -48,14 +48,42 @@ Upload de photos (mode authentifié)
 #### Hmem Wiem (développeuse Flutter)
 #### Tout le monde a participé à la partie backoffice en Vue.js
 
-### Installation et lancement
+## Installation et lancement
+
+### 1. Pré-requis
+*   Docker & Docker Compose installés sur votre machine.
+
+### 2. Lancement des services
+Pour lancer l'ensemble de l'infrastructure (Stockage, DB, API, Services), exécutez :
+```bash
+docker compose up -d
+```
+
+### 3. Initialisation du backend (Gateway)
+Après le premier lancement, installez les dépendances PHP :
+```bash
+docker compose run --rm app-gateway-gestion sh -lc "cd /var/php && composer update"
+```
+
+### 4. Installation des outils de stockage S3
+Pour ajouter les bibliothèques de gestion S3 et d'identifiants uniques (réalisé durant l'intégration) :
+```bash
+# Dans le dossier api/gateway
+composer require aws/aws-sdk-php ramsey/uuid
+composer update
+```
+
+### Points d'entrée utiles pour SeaweedFS
+Le service est configuré dans le `docker-compose.yml`.
+*   **API S3** : `http://localhost:8333` (utilisé par le code PHP).
+*   **Interface d'état** : `http://localhost:9333` (Master status).
+*   **Filer (Explorateur)** : `http://localhost:8888` (pour voir les fichiers stockés).
 
 ////////////////////////////////////
 
 A compléter
 
 ///////////////////////////////////
-
 
 ## Contexte
 SAE Atelier-Projet de Développement Web 2 — BUT 3 Informatique DWM

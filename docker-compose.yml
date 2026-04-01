@@ -68,6 +68,8 @@ services:
       - "9333:9333"
     networks:
       - photopro.net
+    volumes:
+      - ./S3/data:/data
 
   seaweed-volume:
     image: chrislusf/seaweedfs:latest
@@ -78,6 +80,8 @@ services:
       - seaweed-master
     networks:
       - photopro.net
+    volumes:
+      - ./S3/data:/data
 
   seaweed-filer:
     image: chrislusf/seaweedfs:latest
@@ -89,16 +93,21 @@ services:
       - seaweed-volume
     networks:
       - photopro.net
+    volumes:
+      - ./S3/data:/data
 
   seaweed-s3:
     image: chrislusf/seaweedfs:latest
-    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0'
+    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0 -s3.config=/etc/seaweedfs/s3.json'
     ports:
       - "8333:8333"
     depends_on:
       - seaweed-filer
     networks:
       - photopro.net
+    volumes:
+      - ./S3/s3.json:/etc/seaweedfs/s3.json
+      - ./S3/data:/data
 
   # AMQP broker
   rabbitmq:
