@@ -2,11 +2,11 @@
 
 namespace toubilib\api\actions;
 
+use auth\src\api\providers\auth\AuthnProviderInterface;
+use auth\src\api\providers\auth\JWTManager;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpUnauthorizedException;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\api\providers\auth\JWTManager;
 
 class PostAuthRefreshAction extends AbstractAction
 {

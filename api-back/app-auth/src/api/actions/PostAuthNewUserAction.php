@@ -2,14 +2,14 @@
 
 namespace toubilib\api\actions;
 
+use auth\src\api\dto\auth\CredentialsDTO;
+use auth\src\api\providers\auth\AuthnProviderInterface;
+use auth\src\api\providers\auth\JWTManager;
+use auth\src\application_core\application\ports\spi\exceptions\DatabaseException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpInternalServerErrorException;
-use toubilib\api\dto\auth\CredentialsDTO;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\api\providers\auth\JWTManager;
-use toubilib\core\application\ports\spi\exceptions\DatabaseException;
 
 class PostAuthNewUserAction extends AbstractAction
 {

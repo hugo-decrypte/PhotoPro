@@ -2,10 +2,10 @@
 
 namespace toubilib\infra\repositories;
 
-use toubilib\core\application\ports\spi\exceptions\DatabaseException;
-use toubilib\core\application\ports\spi\exceptions\EntityNotFoundException;
-use toubilib\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
-use toubilib\core\domain\entities\user\User;
+use auth\src\application_core\application\ports\spi\exceptions\DatabaseException;
+use auth\src\application_core\application\ports\spi\exceptions\EntityNotFoundException;
+use auth\src\application_core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
+use auth\src\application_core\domain\entities\user\User;
 
 class PDOAuthRepository implements AuthRepositoryInterface
 {
@@ -18,8 +18,8 @@ class PDOAuthRepository implements AuthRepositoryInterface
     }
 
     /**
-     * @throws DatabaseException
-     * @throws EntityNotFoundException
+     * @throws auth\src\application_core\application\ports\spi\exceptions\DatabaseException
+     * @throws auth\src\application_core\application\ports\spi\exceptions\EntityNotFoundException
      */
     public function getByEmail($email): User
     {
@@ -40,7 +40,7 @@ class PDOAuthRepository implements AuthRepositoryInterface
     }
 
     /**
-     * @throws DatabaseException
+     * @throws auth\src\application_core\application\ports\spi\exceptions\DatabaseException
      */
     public function saveUser(User $user): void
     {
@@ -55,7 +55,7 @@ class PDOAuthRepository implements AuthRepositoryInterface
     }
 
     /**
-     * @throws DatabaseException
+     * @throws auth\src\application_core\application\ports\spi\exceptions\DatabaseException
      */
     public function deleteUser(User $user): void
     {

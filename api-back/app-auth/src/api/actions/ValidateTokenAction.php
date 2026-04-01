@@ -2,10 +2,10 @@
 
 namespace toubilib\api\actions;
 
+use auth\src\api\providers\auth\AuthnProviderInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpUnauthorizedException;
-use toubilib\api\providers\auth\AuthnProviderInterface;
 
 class ValidateTokenAction
 {

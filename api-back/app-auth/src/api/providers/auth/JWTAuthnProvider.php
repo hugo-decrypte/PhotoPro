@@ -2,29 +2,29 @@
 
 namespace toubilib\api\providers\auth;
 
-use toubilib\api\dto\auth\AuthDTO;
-use toubilib\api\dto\auth\CredentialsDTO;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\core\application\usecases\auth\AuthnServiceInterface;
+use auth\src\api\dto\auth\AuthDTO;
+use auth\src\api\dto\auth\CredentialsDTO;
+use auth\src\api\providers\auth\AuthnProviderInterface;
+use auth\src\application_core\application\usecases\auth\AuthnServiceInterface;
 
-class JWTAuthnProvider implements AuthnProviderInterface
+class JWTAuthnProvider implements auth\src\api\providers\auth\AuthnProviderInterface
 {
 
-    private AuthnServiceInterface $authnService;
+    private auth\src\application_core\application\usecases\auth\AuthnServiceInterface $authnService;
     private JWTManager $jwtManager;
 
-    public function __construct(AuthnServiceInterface $authnService)
+    public function __construct(auth\src\application_core\application\usecases\auth\AuthnServiceInterface $authnService)
     {
         $this->authnService = $authnService;
         $this->jwtManager = new JWTManager();
     }
 
-    public function register(CredentialsDTO $credentials, int $role=1): void
+    public function register(auth\src\api\dto\auth\CredentialsDTO $credentials, int $role=1): void
     {
         $this->authnService->createUser($credentials, $role);
     }
 
-    public function signin(CredentialsDTO $credentials): AuthDTO
+    public function signin(auth\src\api\dto\auth\CredentialsDTO $credentials): auth\src\api\dto\auth\AuthDTO
     {
         $authDTO = $this->authnService->byCredentials($credentials);
         $authDTO->setRefreshToken($this->jwtManager->createRefreshToken(
@@ -44,7 +44,7 @@ class JWTAuthnProvider implements AuthnProviderInterface
         return $authDTO;
     }
 
-    public function refresh(AuthDTO $authDTO): AuthDTO
+    public function refresh(auth\src\api\dto\auth\AuthDTO $authDTO): auth\src\api\dto\auth\AuthDTO
     {
         $authDTO->setRefreshToken($this->jwtManager->createRefreshToken(
             [
@@ -66,13 +66,13 @@ class JWTAuthnProvider implements AuthnProviderInterface
     /**
      * @throws AuthnException
      */
-    public function getSignedInUser(string $token): AuthDTO
+    public function getSignedInUser(string $token): auth\src\api\dto\auth\AuthDTO
     {
         try {
             $payload = $this->jwtManager->decodeToken($token);
         } catch (InvalidJWTTokenException $e) {
             throw new AuthnException($e->getMessage());
         }
-        return new AuthDTO($payload['id'], $payload['email'], $payload['role']);
+        return new auth\src\api\dto\auth\AuthDTO($payload['id'], $payload['email'], $payload['role']);
     }
 }

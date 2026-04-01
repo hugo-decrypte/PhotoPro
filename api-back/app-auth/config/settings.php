@@ -1,17 +1,16 @@
 <?php
 
+use auth\src\api\actions\PostAuthAction;
+use auth\src\api\actions\PostAuthNewUserAction;
+use auth\src\api\actions\PostAuthRefreshAction;
+use auth\src\api\actions\ValidateTokenAction;
+use auth\src\api\providers\auth\AuthnProviderInterface;
+use auth\src\api\providers\auth\JWTAuthnProvider;
+use auth\src\application_core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
+use auth\src\application_core\application\usecases\auth\AuthnService;
+use auth\src\application_core\application\usecases\auth\AuthnServiceInterface;
+use auth\src\infrastructure\repositories\PDOAuthRepository;
 use Psr\Container\ContainerInterface;
-
-use toubilib\api\actions\PostAuthAction;
-use toubilib\api\actions\PostAuthNewUserAction;
-use toubilib\api\actions\PostAuthRefreshAction;
-use toubilib\api\actions\ValidateTokenAction;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\api\providers\auth\JWTAuthnProvider;
-use toubilib\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
-use toubilib\core\application\usecases\auth\AuthnService;
-use toubilib\core\application\usecases\auth\AuthnServiceInterface;
-use toubilib\infra\repositories\PDOAuthRepository;
 
 return [
 
