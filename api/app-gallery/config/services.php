@@ -1,13 +1,13 @@
 <?php
 
 use DI\Container;
-use toubilib\core\application\ports\api\ServicePraticienInterface;
-use toubilib\core\application\ports\spi\repositoryInterfaces\PraticienRepositoryInterface;
-use toubilib\core\application\usecases\ServicePraticien;
+use photopro\core\application\ports\api\ServiceGalleryInterface;
+use photopro\core\application\ports\spi\repositoryInterfaces\GalleryRepositoryInterface;
+use photopro\core\application\usecases\ServiceGallery;
 
 return [
-    ServicePraticienInterface::class => function (Container $container) {
-        $repository = $container->get(PraticienRepositoryInterface::class);
-        return new ServicePraticien($repository);
+    ServiceGalleryInterface::class => function (Container $container) {
+        $repository = $container->get(GalleryRepositoryInterface::class);
+        return new ServiceGallery($repository);
     },
 ];

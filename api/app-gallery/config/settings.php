@@ -1,18 +1,18 @@
 <?php
 
+use photopro\core\application\ports\spi\repositoryInterfaces\GalleryRepositoryInterface;
+use photopro\infra\repositories\PDOGalleryRepository;
 use Psr\Container\ContainerInterface;
-use toubilib\core\application\ports\spi\repositoryInterfaces\PraticienRepositoryInterface;
-use toubilib\infra\repositories\PDOPraticienRepository;
 
 return [
     'db' => [
         'toubiprat' => [
             'driver' => 'pgsql',
-            'host' => $_ENV['TOUBIPRAT_DB_HOST'] ?? 'toubiprati.db',
+            'host' => $_ENV['TOUBIPRAT_DB_HOST'] ?? 'photoproGallery.db',
             'port' => $_ENV['TOUBIPRAT_DB_PORT'] ?? 5432,
-            'dbname' => $_ENV['TOUBIPRAT_DB_NAME'] ?? 'toubiprat',
-            'user' => $_ENV['TOUBIPRAT_DB_USER'] ?? 'toubiprat',
-            'password' => $_ENV['TOUBIPRAT_DB_PASS'] ?? 'toubiprat',
+            'dbname' => $_ENV['TOUBIPRAT_DB_NAME'] ?? 'photoproGallery',
+            'user' => $_ENV['TOUBIPRAT_DB_USER'] ?? 'photoproGallery',
+            'password' => $_ENV['TOUBIPRAT_DB_PASS'] ?? 'photoproGallery',
         ]
     ],
 
@@ -32,8 +32,8 @@ return [
     },
 
     // Repository Praticien
-    PraticienRepositoryInterface::class => function (ContainerInterface $c) {
-        return new PDOPraticienRepository($c->get('db.toubiprat'));
+    GalleryRepositoryInterface::class => function (ContainerInterface $c) {
+        return new PDOGalleryRepository($c->get('db.toubiprat'));
     },
 ];
 
