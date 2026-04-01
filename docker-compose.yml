@@ -86,6 +86,25 @@ services:
       - ./sql/photopro-auth.schema.sql:/docker-entrypoint-initdb.d/03.schema.sql
       - ./sql/photopro-auth.data.sql:/docker-entrypoint-initdb.d/04.data.sql
 
+  photopro-photo.db:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_USER: photopro
+      POSTGRES_PASSWORD: photopro
+      POSTGRES_DB: photopro
+    networks:
+      - photopro.net
+    volumes:
+      - ./sql/photopro-photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
+
+  adminer:
+    image: adminer
+    ports:
+      - '8081:8081'
+    networks:
+      - photopro.net
+    command: php -S 0.0.0.0:8081 -t /var/www/html
+
   # SeaweedFS (S3-compatible storage)
   seaweed-master:
     image: chrislusf/seaweedfs:latest
