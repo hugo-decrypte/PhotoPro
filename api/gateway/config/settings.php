@@ -52,13 +52,13 @@ return [
     },
 
 
-    'toubilib.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
+    'photopro.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
     'photopro.gallery.api' => $_ENV['GALLERY_API_URL'] ?? 'http://app-gallery:80',
 
 
     'auth.guzzle.client' => function (ContainerInterface $container) {
         return new Client([
-            'base_uri' => $container->get('toubilib.auth.api'),
+            'base_uri' => $container->get('photopro.auth.api'),
             'timeout' => 10.0,
             'http_errors' => true,
         ]);
