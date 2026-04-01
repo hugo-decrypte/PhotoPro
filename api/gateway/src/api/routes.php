@@ -4,11 +4,8 @@ declare(strict_types=1);
 namespace toubilib\api;
 
 use Slim\App;
-use toubilib\api\actions\GatewayAuthGeneriqueAction;
-use toubilib\api\actions\GatewayPatientGeneriqueAction;
-use toubilib\api\actions\GatewayPraticienGeneriqueAction;
-use toubilib\api\actions\GatewayRdvGeneriqueAction;
-use toubilib\api\middlewares\AuthMiddleware;
+use photopro\api\actions\GatewayAuthGeneriqueAction;
+use photopro\api\actions\GatewayPhotoGeneriqueAction;
 
 return function(App $app): App {
 
@@ -31,6 +28,10 @@ return function(App $app): App {
 
     $app->post('/tokens/validate', GatewayAuthGeneriqueAction::class . ':validateToken')
         ->setName('api_auth_validate_token');
+
+    // Routes pour les photos
+    $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto')
+        ->setName('api_photo_get_photo');
 
 
     return $app;

@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\api\actions;
+namespace photopro\api\actions;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
