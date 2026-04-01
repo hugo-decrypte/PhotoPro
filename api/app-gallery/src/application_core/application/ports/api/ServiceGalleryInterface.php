@@ -4,10 +4,13 @@ namespace photopro\core\application\ports\api;
 
 interface ServiceGalleryInterface
 {
-    /**
-     * Retourne la liste complète des praticiens avec leurs informations de base
-     * 
-     * @return GalleryDTO[]
-     */
     public function listOfGalery(): array;
+
+    public function createGallery(array $data, string $photographerId): array;
+
+    public function accessPrivateGallery(string $galleryId, string $code): array;
+
+    public function publishGallery(string $galleryId, string $photographerId): void;
+
+    public function unpublishGallery(string $galleryId, string $photographerId): void;
 }

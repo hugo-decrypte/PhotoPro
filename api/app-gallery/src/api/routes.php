@@ -2,12 +2,18 @@
 declare(strict_types=1);
 
 use photopro\api\actions\ListeGalleryAction;
+use photopro\api\actions\CreateGalleryAction;
+use photopro\api\actions\AccessPrivateGalleryAction;
+use photopro\api\actions\PublishGalleryAction;
+use photopro\api\actions\unpublishGalleryAction;
 
 return function( \Slim\App $app):\Slim\App {
 
-    // Route pour lister tous les gallery
-    $app->get('/praticiens', ListeGalleryAction::class)->setName("gallery.all");
-
-
+    $app->get('/galeries', ListeGalleryAction::class)->setName('gallery.all');
+    $app->post('/galeries', CreateGalleryAction::class)->setName('gallery.create');
+    $app->get('/galeries/{id}/privee', AccessPrivateGalleryAction::class)->setName('gallery.private.access');
+    $app->patch('/galeries/{id}/publish', PublishGalleryAction::class)->setName('gallery.publish');
+    $app->patch('/galeries/{id}/unpublish', UnpublishGalleryAction::class)->setName('gallery.unpublish');
+    
     return $app;
 };

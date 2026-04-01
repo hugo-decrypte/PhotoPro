@@ -13,7 +13,7 @@ class Gallery
         private string $description,
         private bool $status,
         private string $type = 'private',
-        private UuidInterface $coverPhotoId,
+        private ?UuidInterface $coverPhotoId = null,
     ) {}
 
     public function __get(string $property)

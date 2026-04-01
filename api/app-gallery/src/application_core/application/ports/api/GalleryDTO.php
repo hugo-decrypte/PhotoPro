@@ -11,7 +11,7 @@ class GalleryDTO
         private readonly string $description,
         private readonly bool $status,
         private readonly string $type,
-        private readonly string $coverPhotoId,
+        private readonly ?string $coverPhotoId,
     ) {}
 
     public function toArray(): array
