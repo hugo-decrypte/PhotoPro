@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\core\domain\exceptions;
+namespace photopro\core\domain\exceptions;
 
 class ArgumentInvalideException extends \Exception{
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace toubilib\api\providers\auth;
+namespace photopro\api\providers\auth;
 
-use toubilib\api\dto\auth\AuthDTO;
-use toubilib\api\dto\auth\CredentialsDTO;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\core\application\usecases\auth\AuthnServiceInterface;
+use photopro\api\dto\auth\AuthDTO;
+use photopro\api\dto\auth\CredentialsDTO;
+use photopro\api\providers\auth\AuthnProviderInterface;
+use photopro\core\application\usecases\auth\AuthnServiceInterface;
 
 class JWTAuthnProvider implements AuthnProviderInterface
 {

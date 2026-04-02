@@ -1,11 +1,11 @@
 <?php
 
-namespace toubilib\api\actions;
+namespace photopro\api\actions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpUnauthorizedException;
-use toubilib\api\providers\auth\AuthnProviderInterface;
+use photopro\api\providers\auth\AuthnProviderInterface;
 
 class ValidateTokenAction
 {

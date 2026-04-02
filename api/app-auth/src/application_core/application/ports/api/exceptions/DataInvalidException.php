@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\core\application\ports\api\exceptions;
+namespace photopro\core\application\ports\api\exceptions;
 
 class DataInvalidException extends \Exception
 {

@@ -1,15 +1,15 @@
 <?php
 
-use auth\src\api\actions\PostAuthAction;
-use auth\src\api\actions\PostAuthNewUserAction;
-use auth\src\api\actions\PostAuthRefreshAction;
-use auth\src\api\actions\ValidateTokenAction;
-use auth\src\api\providers\auth\AuthnProviderInterface;
-use auth\src\api\providers\auth\JWTAuthnProvider;
-use auth\src\application_core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
-use auth\src\application_core\application\usecases\auth\AuthnService;
-use auth\src\application_core\application\usecases\auth\AuthnServiceInterface;
-use auth\src\infrastructure\repositories\PDOAuthRepository;
+use photopro\api\actions\PostAuthAction;
+use photopro\api\actions\PostAuthNewUserAction;
+use photopro\api\actions\PostAuthRefreshAction;
+use photopro\api\actions\ValidateTokenAction;
+use photopro\api\providers\auth\AuthnProviderInterface;
+use photopro\api\providers\auth\JWTAuthnProvider;
+use photopro\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
+use photopro\core\application\usecases\auth\AuthnService;
+use photopro\core\application\usecases\auth\AuthnServiceInterface;
+use photopro\infra\repositories\PDOAuthRepository;
 use Psr\Container\ContainerInterface;
 
 return [

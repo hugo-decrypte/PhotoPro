@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\core\domain\entities\user;
+namespace photopro\core\domain\entities\user;
 
 
 use Exception;

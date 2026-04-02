@@ -1,11 +1,11 @@
 <?php
 
-namespace toubilib\infra\repositories;
+namespace photopro\infra\repositories;
 
-use toubilib\core\application\ports\spi\exceptions\DatabaseException;
-use toubilib\core\application\ports\spi\exceptions\EntityNotFoundException;
-use toubilib\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
-use toubilib\core\domain\entities\user\User;
+use photopro\core\application\ports\spi\exceptions\DatabaseException;
+use photopro\core\application\ports\spi\exceptions\EntityNotFoundException;
+use photopro\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
+use photopro\core\domain\entities\user\User;
 
 class PDOAuthRepository implements AuthRepositoryInterface
 {

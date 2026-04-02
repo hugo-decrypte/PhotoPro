@@ -2,7 +2,7 @@
 
 namespace photopro\api\providers\auth;
 
-class InvalidJWTTokenException extends \Exception
+class AuthnException extends \Exception
 {
 
 }
