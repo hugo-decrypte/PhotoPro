@@ -1,5 +1,8 @@
 <script setup>
+import { ref } from 'vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
+
+const selectedIds = ref([])
 
 const photos = [
   {
@@ -28,11 +31,30 @@ const photos = [
       'https://static.wikia.nocookie.net/naruto/images/d/d9/Mu_using_Jinton.png/revision/latest/scale-to-width-down/985?cb=20130117144630',
   },
 ]
+
+function toggleSelection(id) {
+  const list = selectedIds.value
+  const i = list.indexOf(id)
+  if (i >= 0) {
+    list.splice(i, 1)
+  } else {
+    list.push(id)
+  }
+}
+
+function clearSelection() {
+  selectedIds.value = []
+}
 </script>
 
 <template>
   <main>
     <h1>Photos</h1>
-    <PhotoGrid :photos="photos" />
+    <p v-if="selectedIds.length">
+      {{ selectedIds.length }} photo(s) selectionnee(s).
+      <button type="button" @click="clearSelection">Tout deselectionner</button>
+    </p>
+    <p v-else>Aucune sélection</p>
+    <PhotoGrid :photos="photos" :selected-ids="selectedIds" @toggle="toggleSelection" />
   </main>
 </template>
