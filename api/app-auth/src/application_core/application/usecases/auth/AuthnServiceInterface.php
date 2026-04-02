@@ -7,7 +7,7 @@ use photopro\api\dto\auth\CredentialsDTO;
 
 interface AuthnServiceInterface{
 
-    public function createUser(CredentialsDTO $credentials, int $role): string;
+    public function createUser(CredentialsDTO $credentials): string;
 
     public function byCredentials(CredentialsDTO $credentials): AuthDTO;
 
