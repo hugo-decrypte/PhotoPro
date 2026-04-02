@@ -34,8 +34,7 @@ class ValidateTokenAction
                 'message' => 'Token valide',
                 'user' => [
                     'id' => $userData->getId(),
-                    'email' => $userData->getEmail(),
-                    'role' => $userData->getRole(),
+                    'email' => $userData->getEmail()
                 ]
             ]));
 
