@@ -1,1 +1,4 @@
-
+INSERT INTO photographer (id, first_name, name, email, password_hash, pseudo, created_at) VALUES
+                                                                                              ('a1b2c3d4-0001-0001-0001-000000000001', 'Alice',   'Dupont',  'alice@photopro.dev',  '$2y$10$abcdefghijklmnopqrstuuVwXyZ0123456789abcdefghijklmnopq', 'alice_lens',   '2024-01-15 10:00:00+00'),
+                                                                                              ('a1b2c3d4-0002-0002-0002-000000000002', 'Bob',     'Martin',  'bob@photopro.dev',    '$2y$10$abcdefghijklmnopqrstuuVwXyZ0123456789abcdefghijklmnopq', 'bob_shots',    '2024-02-20 14:30:00+00'),
+                                                                                              ('a1b2c3d4-0003-0003-0003-000000000003', 'Claire',  'Bernard', 'claire@photopro.dev', '$2y$10$abcdefghijklmnopqrstuuVwXyZ0123456789abcdefghijklmnopq', 'claire_frame', '2024-03-05 09:15:00+00');
