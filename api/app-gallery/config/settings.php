@@ -10,7 +10,7 @@ return [
             'driver' => 'pgsql',
             'host' => $_ENV['PHOTOPRO_GALLERY_DB_HOST'] ?? 'photopro-gallery.db',
             'port' => $_ENV['PHOTOPRO_GALLERY_DB_PORT'] ?? 5432,
-            'dbname' => $_ENV['PHOTOPRO_GALLERY_DB_NAME'] ?? 'photopro',
+            'dbname' => $_ENV['PHOTOPRO_GALLERY_DB_NAME'] ?? 'photopro_gallery',
             'user' => $_ENV['PHOTOPRO_GALLERY_DB_USER'] ?? 'photopro',
             'password' => $_ENV['PHOTOPRO_GALLERY_DB_PASS'] ?? 'photopro',
         ]

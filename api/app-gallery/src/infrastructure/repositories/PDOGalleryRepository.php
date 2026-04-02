@@ -25,7 +25,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 g.status,
                 g.type,
                 g.cover_photo_id
-            FROM galleries g
+            FROM gallery g
             ORDER BY g.created_at DESC
         ";
 
@@ -39,7 +39,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 photographerId: Uuid::fromString($row['photographer_id']),
                 title: $row['title'],
                 description: $row['description'] ?? '',
-                status: $row['status'] === 'published',
+                status: $row['status'] === 'PUBLISHED',
                 type: $row['type'],
                 coverPhotoId: $row['cover_photo_id']
                     ? Uuid::fromString($row['cover_photo_id'])
@@ -56,7 +56,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
 
         try {
             $stmt = $this->pdo->prepare("
-                INSERT INTO galleries (
+                INSERT INTO gallery (
                     id,
                     photographer_id,
                     title,
@@ -114,7 +114,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
     {
         $stmt = $this->pdo->prepare("
             SELECT *
-            FROM galleries
+            FROM gallery
             WHERE id = :id
         ");
 
@@ -142,11 +142,11 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 pga.client_email,
                 pga.client_phone,
                 pga.direct_url
-            FROM galleries g
+            FROM gallery g
             INNER JOIN private_gallery_access pga ON pga.gallery_id = g.id
             WHERE g.id = :gallery_id
-              AND g.type = 'private'
-              AND g.status = 'published'
+              AND g.type = 'PRIVATE'
+              AND g.status = 'PUBLISHED'
               AND pga.access_code = :code
         ");
 
@@ -163,8 +163,8 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
     public function publishGallery(string $galleryId): void
     {
         $stmt = $this->pdo->prepare("
-            UPDATE galleries
-            SET status = 'published',
+            UPDATE gallery
+            SET status = 'PUBLISHED',
                 published_at = NOW()
             WHERE id = :id
         ");
@@ -175,8 +175,8 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
     public function unpublishGallery(string $galleryId): void
     {
         $stmt = $this->pdo->prepare("
-            UPDATE galleries
-            SET status = 'draft',
+            UPDATE gallery
+            SET status = 'DRAFT',
                 published_at = NULL
             WHERE id = :id
         ");
@@ -188,7 +188,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
     {
         $stmt = $this->pdo->prepare("
             SELECT COUNT(*)
-            FROM gallery_photos
+            FROM gallery_photo
             WHERE gallery_id = :gallery_id
         ");
 
@@ -197,51 +197,48 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
-   public function addComment(array $commentData): array
+    public function addComment(array $commentData): array
     {
-    $stmt = $this->pdo->prepare("
-        INSERT INTO comments (
-            id,
-            photo_id,
-            gallery_id,
-            author_name,
-            content,
-            created_at
-        ) VALUES (
-            :id,
-            :photo_id,
-            :gallery_id,
-            :author_name,
-            :content,
-            :created_at
-        )
-    ");
+        $stmt = $this->pdo->prepare("
+            INSERT INTO comment (
+                id,
+                photo_id,
+                gallery_id,
+                author_name,
+                content,
+                created_at
+            ) VALUES (
+                :id,
+                :photo_id,
+                :gallery_id,
+                :author_name,
+                :content,
+                :created_at
+            )
+        ");
 
-    $stmt->execute($commentData);
+        $stmt->execute($commentData);
 
-    return $commentData;
-}
+        return $commentData;
+    }
 
-public function findCommentsByGalleryId(string $galleryId): array
-{
-    $stmt = $this->pdo->prepare("
-        SELECT
-            id,
-            photo_id,
-            gallery_id,
-            author_name,
-            content,
-            created_at
-        FROM comments
-        WHERE gallery_id = :gallery_id
-        ORDER BY created_at DESC
-    ");
+    public function findCommentsByGalleryId(string $galleryId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                id,
+                photo_id,
+                gallery_id,
+                author_name,
+                content,
+                created_at
+            FROM comment
+            WHERE gallery_id = :gallery_id
+            ORDER BY created_at DESC
+        ");
 
-    $stmt->execute([
-        'gallery_id' => $galleryId,
-    ]);
+        $stmt->execute(['gallery_id' => $galleryId]);
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
