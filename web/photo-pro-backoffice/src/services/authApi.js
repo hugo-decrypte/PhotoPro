@@ -2,47 +2,43 @@ import axios from 'axios'
 import { API_BASE_URL, API_TIMEOUT_MS } from '../config/api'
 import { normalizeApiError } from '../lib/apiError'
 
-const apiBaseURL = API_BASE_URL
 const authHttp = axios.create({
-  baseURL: apiBaseURL,
+  baseURL: API_BASE_URL,
   timeout: API_TIMEOUT_MS,
 })
 
-async function postFirstAvailable(candidates, payload, config) {
-  let lastError
-
-  for (const url of candidates) {
-    try {
-      const { data } = await authHttp.post(url, payload, config)
-      return data
-    } catch (error) {
-      lastError = error
-      const status = error?.response?.status
-      if (status && status >= 400 && status < 500 && status !== 404) {
-        break
-      }
-    }
-  }
-
-  throw normalizeApiError(lastError)
-}
-
 export async function register(payload) {
-  return postFirstAvailable(['/auth/register', '/register'], payload)
+  try {
+    const { data } = await authHttp.post('/register', payload)
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
 }
 
 export async function login(payload) {
-  return postFirstAvailable(['/auth/login', '/signin', '/login'], payload)
+  try {
+    const { data } = await authHttp.post('/signin', payload)
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
 }
 
 export async function refreshToken(refresh_token) {
   try {
-    return await postFirstAvailable(['/auth/refresh', '/refresh'], { refresh_token })
+    const { data } = await authHttp.post('/refresh', { refresh_token })
+    return data
   } catch {
-    return postFirstAvailable(
-      ['/auth/refresh', '/refresh'],
-      {},
-      { headers: { Authorization: `Bearer ${refresh_token}` } },
-    )
+    try {
+      const { data } = await authHttp.post(
+        '/refresh',
+        {},
+        { headers: { Authorization: `Bearer ${refresh_token}` } },
+      )
+      return data
+    } catch (error) {
+      throw normalizeApiError(error)
+    }
   }
 }

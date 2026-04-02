@@ -43,7 +43,8 @@ export function setupHttpInterceptors() {
       const authStore = useAuthStore()
       const originalRequest = error.config || {}
       const status = error?.response?.status
-      const isRefreshCall = String(originalRequest.url || '').includes('/auth/refresh')
+      const reqUrl = String(originalRequest.url || '')
+      const isRefreshCall = reqUrl.includes('/refresh')
 
       if (status !== 401 || originalRequest._retry || isRefreshCall || !authStore.refreshToken) {
         return Promise.reject(normalizeApiError(error))
