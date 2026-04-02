@@ -117,8 +117,9 @@ services:
     networks:
       - photopro.net
     volumes:
-      - ./sql/photopro-photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
-      - ./sql/photopro-photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
+        - photopro_photo_data:/var/lib/postgresql/data
+        - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/01.schema.sql
+        - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/02.data.sql
 
   # ── SeaweedFS ─────────────────────────────────────────────────────────────
   seaweed-master:
