@@ -4,3 +4,4 @@
     <p>Liste des galeries (a venir).</p>
   </main>
 </template>
+
