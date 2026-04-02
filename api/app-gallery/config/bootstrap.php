@@ -3,8 +3,9 @@
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 
-if (file_exists(__DIR__ . '/.env')) {
-    $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
+$envPath = __DIR__;
+if (file_exists($envPath . '/.env')) {
+    $dotenv = \Dotenv\Dotenv::createImmutable($envPath);
     $dotenv->load();
 }
 

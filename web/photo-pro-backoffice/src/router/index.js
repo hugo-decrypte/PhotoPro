@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { REQUIRE_AUTH } from '../config/auth'
 import { useAuthStore } from '../stores/auth'
 import DashboardView from '../views/DashboardView.vue'
-import GalleriesView from '../views/GalleriesView.vue'
+import GalleryView from '../views/GalleryView.vue'
 import GalleryEditView from '../views/GalleryEditView.vue'
 import LoginView from '../views/LoginView.vue'
 import PhotosView from '../views/PhotosView.vue'
@@ -34,12 +34,12 @@ const router = createRouter({
       component: PhotosView,
     },
     {
-      path: '/galleries',
-      name: 'galleries',
-      component: GalleriesView,
+      path: '/gallery',
+      name: 'gallery',
+      component: GalleryView,
     },
     {
-      path: '/galleries/new',
+      path: '/gallery/new',
       name: 'gallery-new',
       component: GalleryEditView,
     },

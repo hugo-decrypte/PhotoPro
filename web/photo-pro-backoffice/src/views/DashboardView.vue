@@ -17,7 +17,7 @@ function logout() {
     <p>Connecte avec succes.</p>
     <nav>
       <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
-      <RouterLink :to="{ name: 'galleries' }">Galeries</RouterLink> |
+      <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink> |
       <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
     </nav>
     <button type="button" @click="logout">Se deconnecter</button>

@@ -50,6 +50,11 @@ function clearSelection() {
 <template>
   <main>
     <h1>Photos</h1>
+    <nav>
+      <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
+      <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink> |
+      <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
+    </nav>
     <p v-if="selectedIds.length">
       {{ selectedIds.length }} photo(s) selectionnee(s).
       <button type="button" @click="clearSelection">Tout deselectionner</button>
