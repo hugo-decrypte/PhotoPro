@@ -31,6 +31,11 @@ async function submit() {
 <template>
   <main>
     <h1>Créer une galerie</h1>
+    <nav>
+      <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
+      <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink> |
+      <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
+    </nav>
 
     <form @submit.prevent="submit">
       <div>
