@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\api\dto\auth;
+namespace photopro\api\dto\auth;
 
 class CredentialsDTO{
 
