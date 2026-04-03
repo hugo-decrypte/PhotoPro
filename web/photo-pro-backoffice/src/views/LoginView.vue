@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { normalizeApiError } from '../lib/apiError'
 import { login } from '../services/authApi'
 import { useAuthStore } from '../stores/auth'
 
@@ -39,9 +40,12 @@ async function submit() {
     }
 
     authStore.setTokens(tokens.accessToken, tokens.refreshToken)
+    if (data?.user) {
+      authStore.setUser(data.user)
+    }
     router.push({ name: 'dashboard' })
-  } catch {
-    errorMessage.value = 'Connexion impossible.'
+  } catch (err) {
+    errorMessage.value = normalizeApiError(err).message || 'Connexion impossible.'
   } finally {
     loading.value = false
   }

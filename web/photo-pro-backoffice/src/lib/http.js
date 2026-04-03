@@ -9,6 +9,26 @@ const http = axios.create({
   timeout: API_TIMEOUT_MS,
 })
 
+/**
+ * app-gallery exige X-Photographer-Id sur création / publish / unpublish.
+ * Chemins relatifs à API_BASE_URL (/api).
+ */
+function requestNeedsXPhotographerId(config) {
+  const method = (config.method || 'get').toLowerCase()
+  const path = String(config.url || '')
+    .split('?')[0]
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+
+  if (method === 'post' && path === 'galeries') {
+    return true
+  }
+  if (method === 'patch' && /^galeries\/[^/]+\/(publish|unpublish)$/.test(path)) {
+    return true
+  }
+  return false
+}
+
 function extractTokens(data) {
   return {
     accessToken: data?.access_token || data?.token || '',
@@ -29,9 +49,14 @@ export function setupHttpInterceptors() {
     const authStore = useAuthStore()
     authStore.loadFromStorage()
 
+    config.headers = config.headers || {}
+
     if (authStore.token) {
-      config.headers = config.headers || {}
       config.headers.Authorization = `Bearer ${authStore.token}`
+    }
+
+    if (requestNeedsXPhotographerId(config) && authStore.userId) {
+      config.headers['X-Photographer-Id'] = authStore.userId
     }
 
     return config
@@ -62,6 +87,10 @@ export function setupHttpInterceptors() {
         authStore.setTokens(tokens.accessToken, tokens.refreshToken || authStore.refreshToken)
         originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`
+
+        if (requestNeedsXPhotographerId(originalRequest) && authStore.userId) {
+          originalRequest.headers['X-Photographer-Id'] = authStore.userId
+        }
 
         return http(originalRequest)
       } catch (refreshError) {
