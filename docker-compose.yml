@@ -35,7 +35,7 @@ services:
       - app-auth
       - app-gallery
       - app-photo
-    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
+    command: sh -c "COMPOSER_PROCESS_TIMEOUT=1800 composer install --prefer-dist --no-interaction --no-progress && php -S 0.0.0.0:80 -t /var/php/public"
 
   # ── Auth ──────────────────────────────────────────────────────────────────
   app-auth:
@@ -93,20 +93,20 @@ services:
 
   # ── Photo ─────────────────────────────────────────────────────────────────
   app-photo:
-        build:
-          context: build
-          dockerfile: 8.5-cli.Dockerfile
-        volumes:
-          - ./api/app-photo:/var/php
-        working_dir: /var/php
-        ports:
-          - "6082:80"
-        networks:
-          - photopro.net
-        depends_on:
-          - photopro-photo.db
-          - seaweed-s3
-        command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
+    build:
+      context: build
+      dockerfile: 8.5-cli.Dockerfile
+    volumes:
+      - ./api/app-photo:/var/php
+    working_dir: /var/php
+    ports:
+      - "6082:80"
+    networks:
+      - photopro.net
+    depends_on:
+      - photopro-photo.db
+      - seaweed-s3
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
 
   photopro-photo.db:
     image: postgres:16
@@ -117,9 +117,8 @@ services:
     networks:
       - photopro.net
     volumes:
-        - photopro_photo_data:/var/lib/postgresql/data
-        - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/01.schema.sql
-        - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/02.data.sql
+      - ./sql/photopro-photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
+      - ./sql/photopro-photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 
   # ── SeaweedFS ─────────────────────────────────────────────────────────────
   seaweed-master:
