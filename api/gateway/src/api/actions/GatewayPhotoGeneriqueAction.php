@@ -25,42 +25,7 @@ class GatewayPhotoGeneriqueAction
 
     public function uploadPhoto(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        // Upload multipart : on transfère le body raw directement
-        $contentType = $request->getHeaderLine('Content-Type');
-        $options = [
-            'headers' => [
-                'Content-Type' => $contentType,
-            ],
-            'body' => $request->getBody(),
-        ];
-
-        $authHeader = $request->getHeaderLine('Authorization');
-        if (!empty($authHeader)) {
-            $options['headers']['Authorization'] = $authHeader;
-        }
-
-        try {
-            $apiResponse = $this->httpClient->request('POST', '/photos', $options);
-            $response->getBody()->write($apiResponse->getBody()->getContents());
-            return $response
-                ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                ->withStatus($apiResponse->getStatusCode());
-
-        } catch (ClientException $e) {
-            $statusCode = $e->getResponse()->getStatusCode();
-            $errorBody = $e->getResponse()->getBody()->getContents();
-            $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Photo']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
-
-        } catch (ConnectException $e) {
-            $response->getBody()->write(json_encode(['message' => 'Service Photo injoignable']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(503);
-
-        } catch (ServerException $e) {
-            $errorBody = $e->getResponse()->getBody()->getContents();
-            $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur interne service Photo']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-        }
+        return $this->transfererRequete($request, $response, '/photos');
     }
 
     public function deletePhoto(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -86,7 +51,7 @@ class GatewayPhotoGeneriqueAction
             $multipart = [];
             // Ajouter les champs texte
             foreach ($request->getParsedBody() ?: [] as $name => $value) {
-                $multipart[] = ['name' => $name, 'contents' => (string)$value];
+                $this->appendMultipartField($multipart, (string)$name, $value);
             }
             // Ajouter les fichiers
             foreach ($request->getUploadedFiles() as $name => $file) {
@@ -130,5 +95,32 @@ class GatewayPhotoGeneriqueAction
             $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur interne service Photo']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
+    }
+
+    /**
+     * Evite les warnings "Array to string conversion" sur payload multipart.
+     */
+    private function appendMultipartField(array &$multipart, string $name, mixed $value): void
+    {
+        if (is_array($value)) {
+            foreach ($value as $k => $item) {
+                $childName = is_int($k) ? "{$name}[]" : "{$name}[{$k}]";
+                $this->appendMultipartField($multipart, $childName, $item);
+            }
+            return;
+        }
+
+        if (is_bool($value)) {
+            $value = $value ? '1' : '0';
+        } elseif ($value === null) {
+            $value = '';
+        } elseif (is_object($value)) {
+            $value = json_encode($value, JSON_UNESCAPED_UNICODE) ?: '';
+        }
+
+        $multipart[] = [
+            'name' => $name,
+            'contents' => (string)$value,
+        ];
     }
 }

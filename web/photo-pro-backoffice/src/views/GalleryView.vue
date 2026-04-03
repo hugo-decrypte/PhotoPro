@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
+import { publishGallery, unpublishGallery } from '../services/galleryApi'
 import '../css/gallery-view.css'
 
 const galleries = ref([
@@ -26,12 +27,25 @@ const galleries = ref([
     photosCount: 0,
   },
 ])
+const actionError = ref('')
+const actionLoadingId = ref('')
 
-function togglePublish(gallery) {
-  if (!gallery.isPublished && gallery.photosCount === 0) {
-    return
+async function togglePublish(gallery) {
+  actionError.value = ''
+  actionLoadingId.value = gallery.id
+  try {
+    if (gallery.isPublished) {
+      await unpublishGallery(gallery.id)
+      gallery.isPublished = false
+    } else {
+      await publishGallery(gallery.id)
+      gallery.isPublished = true
+    }
+  } catch (err) {
+    actionError.value = err.message || 'Action impossible.'
+  } finally {
+    actionLoadingId.value = ''
   }
-  gallery.isPublished = !gallery.isPublished
 }
 </script>
 
@@ -41,6 +55,7 @@ function togglePublish(gallery) {
 
     <main class="app-shell__main">
       <h1 class="app-shell__title">Galeries</h1>
+      <p v-if="actionError" class="gallery-action-error" role="alert">{{ actionError }}</p>
 
       <div class="gallery-grid">
         <article v-for="gallery in galleries" :key="gallery.id" class="gallery-card">
@@ -62,14 +77,18 @@ function togglePublish(gallery) {
               <RouterLink :to="{ name: 'gallery-new' }">Éditer</RouterLink>
               <button
                 type="button"
-                :disabled="!gallery.isPublished && gallery.photosCount === 0"
+                :disabled="actionLoadingId === gallery.id"
                 @click="togglePublish(gallery)"
               >
-                {{ gallery.isPublished ? 'Dépublier' : 'Publier' }}
+                {{
+                  actionLoadingId === gallery.id
+                    ? 'Patientez…'
+                    : gallery.isPublished
+                      ? 'Dépublier'
+                      : 'Publier'
+                }}
               </button>
-              <small v-if="!gallery.isPublished && gallery.photosCount === 0" class="gallery-card__hint">
-                Ajoutez au moins une photo pour publier.
-              </small>
+              <small class="gallery-card__hint">Les erreurs backend sont affichées en haut de la page.</small>
             </div>
           </div>
         </article>
@@ -77,3 +96,11 @@ function togglePublish(gallery) {
     </main>
   </div>
 </template>
+
+<style scoped>
+.gallery-action-error {
+  margin: 0 0 1rem;
+  color: #c62828;
+  font-size: 0.9rem;
+}
+</style>
