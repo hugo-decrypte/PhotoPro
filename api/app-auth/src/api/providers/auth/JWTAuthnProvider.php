@@ -19,9 +19,9 @@ class JWTAuthnProvider implements AuthnProviderInterface
         $this->jwtManager = new JWTManager();
     }
 
-    public function register(CredentialsDTO $credentials, int $role=1): void
+    public function register(CredentialsDTO $credentials): void
     {
-        $this->authnService->createUser($credentials, $role);
+        $this->authnService->createUser($credentials);
     }
 
     public function signin(CredentialsDTO $credentials): AuthDTO
@@ -30,15 +30,13 @@ class JWTAuthnProvider implements AuthnProviderInterface
         $authDTO->setRefreshToken($this->jwtManager->createRefreshToken(
             [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ));
         $authDTO->setAccessToken($this->jwtManager->createAccessToken(
             [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ));
         return $authDTO;
@@ -49,15 +47,13 @@ class JWTAuthnProvider implements AuthnProviderInterface
         $authDTO->setRefreshToken($this->jwtManager->createRefreshToken(
             [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ));
         $authDTO->setAccessToken($this->jwtManager->createAccessToken(
             [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ));
         return $authDTO;
@@ -73,6 +69,6 @@ class JWTAuthnProvider implements AuthnProviderInterface
         } catch (InvalidJWTTokenException $e) {
             throw new AuthnException($e->getMessage());
         }
-        return new AuthDTO($payload['id'], $payload['email'], $payload['role']);
+        return new AuthDTO($payload['id'], $payload['email']);
     }
 }

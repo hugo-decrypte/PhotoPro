@@ -30,7 +30,13 @@ class PostAuthNewUserAction extends AbstractAction
             throw new HttpBadRequestException($rq, "l'email et le mdp sont requis.");
         }
 
-        $credentialDTO = new CredentialsDTO($data['email'], $data['password']);
+        $credentialDTO = new CredentialsDTO(
+            $data['email'], 
+            $data['password'],
+            $data['first_name'] ?? '',
+            $data['name'] ?? '',
+            $data['pseudo'] ?? ''
+        );
         try {
             $this->authnProvider->register($credentialDTO);
         } catch (DatabaseException $e) {
@@ -46,8 +52,7 @@ class PostAuthNewUserAction extends AbstractAction
             'refresh_expires_in' => JWTManager::REFRESH_TOKEN_DURATION,
             'user' => [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ];
 

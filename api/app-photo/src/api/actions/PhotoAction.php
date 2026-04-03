@@ -12,7 +12,7 @@ class PhotoAction
         private ServicePhotoInterface $servicePhoto
     ) {}
 
-    public function __invoke(Request $request, Response $response): Response
+    public function __invoke(Request $request, Response $response, array $args): Response
     {
         $id_photo = $args['id_photo'] ?? null;
         if(empty($id_photo)) {

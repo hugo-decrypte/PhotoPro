@@ -57,6 +57,8 @@ class GatewayGalleryGeneriqueAction
     {
         $method = $request->getMethod();
         $body = $request->getParsedBody();
+
+        // preparation des options de la requete
         $options = [];
 
         $authHeader = $request->getHeaderLine('Authorization');

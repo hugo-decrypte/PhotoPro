@@ -11,4 +11,11 @@ return [
             $c->get(ServicePhotoInterface::class)
         );
     },
+
+    \photo\api\actions\UploadPhotoAction::class => function ($c) {
+        return new \photo\api\actions\UploadPhotoAction(
+            $c->get(ServicePhotoInterface::class),
+            $c->get(\photo\core\services\StorageServiceInterface::class)
+        );
+    },
 ];

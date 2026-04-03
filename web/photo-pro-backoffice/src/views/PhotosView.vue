@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 
 const selectedIds = ref([])
@@ -48,18 +49,40 @@ function clearSelection() {
 </script>
 
 <template>
-  <main>
-    <h1>Photos</h1>
-    <nav>
-      <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
-      <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink> |
-      <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
-    </nav>
-    <p v-if="selectedIds.length">
-      {{ selectedIds.length }} photo(s) selectionnee(s).
-      <button type="button" @click="clearSelection">Tout deselectionner</button>
-    </p>
-    <p v-else>Aucune sélection</p>
-    <PhotoGrid :photos="photos" :selected-ids="selectedIds" @toggle="toggleSelection" />
-  </main>
+  <div class="app-shell">
+    <AppHeader />
+    <main class="app-shell__main">
+      <h1 class="app-shell__title">Photos</h1>
+      <p v-if="selectedIds.length">
+        {{ selectedIds.length }} photo(s) sélectionnée(s).
+        <button type="button" class="photos-toolbar__btn" @click="clearSelection">Tout désélectionner</button>
+      </p>
+      <p v-else class="photos-toolbar__hint">Aucune sélection</p>
+      <PhotoGrid :photos="photos" :selected-ids="selectedIds" @toggle="toggleSelection" />
+    </main>
+  </div>
 </template>
+
+<style scoped>
+.photos-toolbar__hint {
+  margin: 0 0 1rem;
+  color: #6b6b78;
+  font-size: 0.9rem;
+}
+
+.photos-toolbar__btn {
+  margin-left: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #94a8f9;
+  border-radius: 6px;
+  background: #f0f2ff;
+  color: #4a5fc9;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.photos-toolbar__btn:hover {
+  background: #e4e8ff;
+}
+</style>

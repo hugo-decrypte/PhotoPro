@@ -3,6 +3,7 @@
 namespace photopro\infra\repositories;
 
 use PDO;
+use photopro\core\application\ports\api\InputCommentDTO;
 use photopro\core\application\ports\spi\repositoryInterfaces\GalleryRepositoryInterface;
 use photopro\core\domain\entities\galery\Gallery;
 use Ramsey\Uuid\Uuid;
@@ -197,10 +198,10 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
         return (int) $stmt->fetchColumn();
     }
 
-    public function addComment(array $commentData): array
+    public function addComment(InputCommentDTO $dto)
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO comment (
+        INSERT INTO comment (
                 id,
                 photo_id,
                 gallery_id,
@@ -217,9 +218,15 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
             )
         ");
 
-        $stmt->execute($commentData);
-
-        return $commentData;
+        $uuid = Uuid::uuid4()->toString();
+        $stmt->execute([
+            'id'           => $uuid,
+            'photo_id'     => $dto->photoId,
+            'gallery_id'   => $dto->galleryId,
+            'author_name'  => $dto->authorName,
+            'content'      => $dto->content,
+            'created_at'   => $dto->createdAt->format('Y-m-d H:i:s')
+        ]);
     }
 
     public function findCommentsByGalleryId(string $galleryId): array

@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue'
+import AppHeader from '../components/AppHeader.vue'
+import '../css/gallery-view.css'
 
 const galleries = ref([
   {
@@ -34,33 +36,44 @@ function togglePublish(gallery) {
 </script>
 
 <template>
-  <main>
-    <h1>Galeries</h1>
-    <nav>
-      <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
-      <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink> |
-      <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
-    </nav>
+  <div class="app-shell">
+    <AppHeader />
 
-    <ul>
-      <li v-for="gallery in galleries" :key="gallery.id">
-        <strong>{{ gallery.title }}</strong>
-        -
-        <span>{{ gallery.visibility === 'private' ? 'Privee' : 'Publique' }}</span>
-        -
-        <span>{{ gallery.isPublished ? 'Publiee' : 'Non publiee' }}</span>
-        -
-        <span>{{ gallery.photosCount }} photo(s)</span>
-        <div>
-          <RouterLink :to="{ name: 'gallery-new' }">Editer</RouterLink>
-          <button type="button" @click="togglePublish(gallery)">
-            {{ gallery.isPublished ? 'Depublier' : 'Publier' }}
-          </button>
-          <small v-if="!gallery.isPublished && gallery.photosCount === 0">
-            Ajoutez au moins une photo pour publier.
-          </small>
-        </div>
-      </li>
-    </ul>
-  </main>
+    <main class="app-shell__main">
+      <h1 class="app-shell__title">Galeries</h1>
+
+      <div class="gallery-grid">
+        <article v-for="gallery in galleries" :key="gallery.id" class="gallery-card">
+          <div class="gallery-card__cover" aria-hidden="true" />
+          <div class="gallery-card__footer">
+            <span
+              class="gallery-card__badge"
+              :class="
+                gallery.visibility === 'private' ? 'gallery-card__badge--private' : 'gallery-card__badge--public'
+              "
+            >
+              {{ gallery.visibility === 'private' ? 'Privé' : 'Public' }}
+            </span>
+            <h2 class="gallery-card__title">{{ gallery.title }}</h2>
+            <p class="gallery-card__status">
+              {{ gallery.isPublished ? 'Publiée' : 'Non publiée' }} · {{ gallery.photosCount }} photo(s)
+            </p>
+            <div class="gallery-card__actions">
+              <RouterLink :to="{ name: 'gallery-new' }">Éditer</RouterLink>
+              <button
+                type="button"
+                :disabled="!gallery.isPublished && gallery.photosCount === 0"
+                @click="togglePublish(gallery)"
+              >
+                {{ gallery.isPublished ? 'Dépublier' : 'Publier' }}
+              </button>
+              <small v-if="!gallery.isPublished && gallery.photosCount === 0" class="gallery-card__hint">
+                Ajoutez au moins une photo pour publier.
+              </small>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
 </template>

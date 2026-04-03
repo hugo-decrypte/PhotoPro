@@ -42,15 +42,17 @@ class AuthnService implements AuthnServiceInterface
         return new AuthDTO(
             id: $user->id,
             email: $user->email,
-            role: $user->role,
         );
     }
 
-    public function createUser(CredentialsDTO $credentials, int $role): string
+    public function createUser(CredentialsDTO $credentials): string
     {
         $uuid = Uuid::uuid4()->toString();
         $mdp = password_hash($credentials->getPassword(), PASSWORD_DEFAULT, ['cost' => 12]);
-        $user = new User($uuid, $credentials->getEmail(), $mdp, $role);
+        $user = new User($uuid, $credentials->getEmail(), $mdp);
+        $user->firstName = $credentials->getFirstName();
+        $user->name = $credentials->getName();
+        $user->pseudo = $credentials->getPseudo();
         $this->authRepository->saveUser($user);
         return $uuid;
     }

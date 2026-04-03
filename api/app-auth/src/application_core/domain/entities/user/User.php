@@ -10,14 +10,15 @@ class User {
     private string $id;
     private string $email;
     private string $password;
-    private int $role;
+    public string $firstName = '';
+    public string $name = '';
+    public string $pseudo = '';
 
-    public function __construct(string $id, string $email, string $password, int $role)
+    public function __construct(string $id, string $email, string $password)
     {
         $this->id = $id;
         $this->email = $email;
         $this->password = $password;
-        $this->role = $role;
     }
 
     public static function fromArray(array $data): self
@@ -25,8 +26,7 @@ class User {
         return new self(
             $data['id'],
             $data['email'],
-            $data['password'],
-            $data['role']
+            $data['password']
         );
     }
 

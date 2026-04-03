@@ -3,7 +3,9 @@
 namespace photopro\core\application\usecases;
 
 use photopro\core\application\ports\api\GalleryDTO;
+use photopro\core\application\ports\api\InputCommentDTO;
 use photopro\core\application\ports\api\ServiceGalleryInterface;
+use photopro\core\application\ports\spi\exceptions\EntityNotFoundException;
 use photopro\core\application\ports\spi\repositoryInterfaces\GalleryRepositoryInterface;
 use Ramsey\Uuid\Uuid;
 
@@ -123,33 +125,6 @@ class ServiceGallery implements ServiceGalleryInterface
         $this->galleryRepository->unpublishGallery($galleryId);
     }
 
-     public function addComment(string $galleryId, string $photoId, array $data): array
-    {
-        $gallery = $this->galleryRepository->findById($galleryId);
-
-        if (!$gallery) {
-            throw new \RuntimeException('Galerie introuvable', 404);
-        }
-
-        $content = trim((string)($data['content'] ?? ''));
-        if ($content === '') {
-            throw new \InvalidArgumentException('Contenu obligatoire');
-        }
-
-        $commentId = Uuid::uuid4()->toString();
-
-        $commentData = [
-            'id' => $commentId,
-            'photo_id' => $photoId,
-            'gallery_id' => $galleryId,
-            'author_name' => $data['author_name'] ?? null,
-            'content' => $content,
-            'created_at' => date('Y-m-d H:i:s'),
-        ];
-
-        return $this->galleryRepository->addComment($commentData);
-    }
-
     public function listComments(string $galleryId): array
     {
         $gallery = $this->galleryRepository->findById($galleryId);
@@ -161,4 +136,18 @@ class ServiceGallery implements ServiceGalleryInterface
         return $this->galleryRepository->findCommentsByGalleryId($galleryId);
     }
 
+    public function addComment(InputCommentDTO $dto)
+    {
+        $gallery = $this->galleryRepository->findById($dto->galleryId);
+        if (!$gallery) {
+            throw new \RuntimeException('Galerie introuvable', 404);
+        }
+        try {
+            $this->galleryRepository->addComment($dto);
+        } catch (EntityNotFoundException $e) {
+            throw new EntityNotFoundException($e);
+        } catch (\Error $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+    }
 }

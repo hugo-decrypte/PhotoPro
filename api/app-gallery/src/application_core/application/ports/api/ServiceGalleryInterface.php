@@ -14,7 +14,7 @@ interface ServiceGalleryInterface
 
     public function unpublishGallery(string $galleryId, string $photographerId): void;
 
-    public function addComment(string $galleryId, string $photoId, array $data): array;
+    public function addComment(InputCommentDTO $dto);
 
     public function listComments(string $galleryId): array;
 

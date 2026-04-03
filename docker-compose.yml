@@ -93,20 +93,20 @@ services:
 
   # ── Photo ─────────────────────────────────────────────────────────────────
   app-photo:
-        build:
-          context: build
-          dockerfile: 8.5-cli.Dockerfile
-        volumes:
-          - ./api/app-photo:/var/php
-        working_dir: /var/php
-        ports:
-          - "6082:80"
-        networks:
-          - photopro.net
-        depends_on:
-          - photopro-photo.db
-          - seaweed-s3
-        command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
+    build:
+      context: build
+      dockerfile: 8.5-cli.Dockerfile
+    volumes:
+      - ./api/app-photo:/var/php
+    working_dir: /var/php
+    ports:
+      - "6082:80"
+    networks:
+      - photopro.net
+    depends_on:
+      - photopro-photo.db
+      - seaweed-s3
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t public"
 
   photopro-photo.db:
     image: postgres:16
@@ -132,9 +132,9 @@ services:
 
   seaweed-volume:
     image: chrislusf/seaweedfs:latest
-    command: 'volume -ip=seaweed-volume -master="seaweed-master:9333" -ip.bind=0.0.0.0 -port=8080'
+    command: 'volume -ip=seaweed-volume -master="seaweed-master:9333" -ip.bind=0.0.0.0 -port=8082'
     ports:
-      - "8080:8080"
+      - "8082:8082"
     depends_on:
       - seaweed-master
     networks:
@@ -153,15 +153,20 @@ services:
 
   seaweed-s3:
     image: chrislusf/seaweedfs:latest
-    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0'
+    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0 -config=/etc/seaweedfs/s3.json'
     ports:
       - "8333:8333"
     depends_on:
       - seaweed-filer
     networks:
       - photopro.net
+    environment:
+      - AWS_ACCESS_KEY_ID=PHOTOPRO_ACCESS_KEY
+      - AWS_SECRET_ACCESS_KEY=PHOTOPRO_SECRET_KEY
+    volumes:
+      - ./S3/s3.json:/etc/seaweedfs/s3.json
 
-# ── Adminer ────────────────────────────────────────────────────────────────
+  # ── Adminer ────────────────────────────────────────────────────────────────
   adminer:
     image: adminer:latest
     ports:

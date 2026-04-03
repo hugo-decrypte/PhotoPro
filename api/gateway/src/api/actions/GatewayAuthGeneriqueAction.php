@@ -83,19 +83,14 @@ class GatewayAuthGeneriqueAction
                 ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withStatus($statusCode);
 
-        } catch (ConnectException | ServerException $e) {
-            // Erreurs 5xx
+        } catch (ConnectException $e) {
+            $response->getBody()->write(json_encode(['message' => 'Service Auth injoignable']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(504);
+        } catch (ServerException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorBody = $e->getResponse()->getBody()->getContents();
-
-            // Si l'API distante retourne déjà un JSON d'erreur, on le transmet
-            $response->getBody()->write($errorBody ?: json_encode([
-                'message' => 'Erreur interne du service distant'
-            ]));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                ->withStatus($statusCode);
+            $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Auth (500)']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
         }
     }
 }
