@@ -1,9 +1,11 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import { createGallery } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
+
+const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
 
 const router = useRouter()
 
@@ -17,6 +19,8 @@ const clientPhone = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(false)
+const selectedPhotoIds = ref([])
+const selectedPhotos = ref([])
 
 const isPrivate = computed(() => visibility.value === 'private')
 
@@ -49,6 +53,10 @@ async function submit() {
       payload.client_phone = clientPhone.value.trim()
     }
   }
+  if (selectedPhotoIds.value.length) {
+    // Prévu pour rattachement backend dès que l'endpoint est disponible.
+    payload.photo_ids = [...selectedPhotoIds.value]
+  }
 
   loading.value = true
   try {
@@ -63,6 +71,9 @@ async function submit() {
     clientEmail.value = ''
     clientName.value = ''
     clientPhone.value = ''
+    selectedPhotoIds.value = []
+    selectedPhotos.value = []
+    sessionStorage.removeItem(GALLERY_PREFILL_STORAGE_KEY)
     await router.push({ name: 'gallery' })
   } catch (err) {
     errorMessage.value = normalizeApiError(err).message || err?.message || 'Création impossible.'
@@ -70,6 +81,33 @@ async function submit() {
     loading.value = false
   }
 }
+
+function loadPrefillFromSelection() {
+  const raw = sessionStorage.getItem(GALLERY_PREFILL_STORAGE_KEY)
+  if (!raw) {
+    return
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    const ids = Array.isArray(parsed?.photoIds) ? parsed.photoIds : []
+    const photos = Array.isArray(parsed?.photos) ? parsed.photos : []
+    selectedPhotoIds.value = ids.map((id) => String(id))
+    selectedPhotos.value = photos
+      .filter((p) => p && p.id)
+      .map((p) => ({
+        id: String(p.id),
+        title: String(p.title || p.originalName || 'Sans titre'),
+      }))
+  } catch {
+    selectedPhotoIds.value = []
+    selectedPhotos.value = []
+  }
+}
+
+onMounted(() => {
+  loadPrefillFromSelection()
+})
 </script>
 
 <template>
@@ -79,6 +117,15 @@ async function submit() {
       <h1 class="app-shell__title">Créer une galerie</h1>
 
       <form class="gallery-edit-form" @submit.prevent="submit">
+        <div v-if="selectedPhotoIds.length" class="gallery-edit-form__prefill">
+          <p class="gallery-edit-form__prefill-title">
+            Photos présélectionnées depuis l'écran Photos : {{ selectedPhotoIds.length }}
+          </p>
+          <ul class="gallery-edit-form__prefill-list">
+            <li v-for="photo in selectedPhotos" :key="photo.id">{{ photo.title }} ({{ photo.id }})</li>
+          </ul>
+        </div>
+
         <div>
           <label>Titre de la galerie</label>
           <input v-model="title" type="text" placeholder="Ex: Vacances 2026" />
@@ -166,6 +213,29 @@ async function submit() {
   margin: 0;
   font-size: 0.8rem;
   color: #6b6b78;
+}
+
+.gallery-edit-form__prefill {
+  padding: 0.75rem;
+  border: 1px solid #dfe4ff;
+  border-radius: 8px;
+  background: #f7f9ff;
+}
+
+.gallery-edit-form__prefill-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3a3a45;
+}
+
+.gallery-edit-form__prefill-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  max-height: 9rem;
+  overflow: auto;
+  color: #5a5a67;
+  font-size: 0.8rem;
 }
 
 .gallery-edit-form button[type='submit'] {
