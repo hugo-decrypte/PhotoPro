@@ -66,6 +66,11 @@ class GatewayGalleryGeneriqueAction
             $options['headers']['Authorization'] = $authHeader;
         }
 
+        $photographerId = $request->getHeaderLine('X-Photographer-Id');
+        if (!empty($photographerId)) {
+            $options['headers']['X-Photographer-Id'] = $photographerId;
+        }
+
         if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
             if (is_array($body) || is_object($body)) {
                 $options['json'] = $body;

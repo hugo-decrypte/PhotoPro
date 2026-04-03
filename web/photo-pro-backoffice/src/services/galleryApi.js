@@ -10,6 +10,15 @@ export async function fetchGalleries() {
   }
 }
 
+export async function createGallery(payload) {
+  try {
+    const { data } = await http.post('/galeries', payload)
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
+}
+
 export async function publishGallery(galleryId) {
   try {
     const { data } = await http.patch(`/galeries/${encodeURIComponent(galleryId)}/publish`)
