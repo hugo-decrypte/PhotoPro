@@ -23,7 +23,7 @@ return [
         PDO::ATTR_EMULATE_PREPARES => false,
     ],
 
-    // Connexion toubiprat
+    // Connexion
     'db.photo' => function (ContainerInterface $c): PDO {
         $config = $c->get('db')['photo'];
         $options = $c->get('pdo_options');
@@ -31,7 +31,7 @@ return [
         return new PDO($dsn, $config['user'], $config['password'], $options);
     },
 
-    // Repository Praticien
+    // Repository
     // Settings S3
     's3.endpoint' => $_ENV['S3_ENDPOINT'] ?? 'http://seaweed-s3:8333',
     's3.region'   => $_ENV['S3_REGION']   ?? 'us-east-1',
