@@ -18,11 +18,43 @@ class GatewayGalleryGeneriqueAction
         $this->httpClient = $httpClient;
     }
 
-    public function getGallery(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface{
+    public function getGalleries(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
         return $this->transfererRequete($request, $response, '/galeries');
     }
 
-    public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface{
+    public function createGallery(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries');
+    }
+
+    public function getPrivateGallery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/privee');
+    }
+
+    public function publishGallery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/publish');
+    }
+
+    public function unpublishGallery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/unpublish');
+    }
+
+    public function getComments(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/comments');
+    }
+
+    public function addComment(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos/' . $args['photoId'] . '/comments');
+    }
+
+    public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface
+    {
         $method = $request->getMethod();
         $body = $request->getParsedBody();
 
@@ -34,55 +66,36 @@ class GatewayGalleryGeneriqueAction
             $options['headers']['Authorization'] = $authHeader;
         }
 
-        // Gestion du body si présent
         if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
             if (is_array($body) || is_object($body)) {
                 $options['json'] = $body;
             } else {
                 $options['body'] = $body;
-                $options['headers']['Content-Type'] =
-                    $request->getHeaderLine('Content-Type') ?: 'application/json';
+                $options['headers']['Content-Type'] = $request->getHeaderLine('Content-Type') ?: 'application/json';
             }
         }
 
         try {
-            // transfert de la requete vers l'API distante
             $apiResponse = $this->httpClient->request($method, $path, $options);
-
-            $data = $apiResponse->getBody()->getContents();
-            $response->getBody()->write($data);
-
+            $response->getBody()->write($apiResponse->getBody()->getContents());
             return $response
                 ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withStatus($apiResponse->getStatusCode());
-            //Gestion des erreurs Guzzle
+
         } catch (ClientException $e) {
-            // Erreurs 4xx
             $statusCode = $e->getResponse()->getStatusCode();
             $errorBody = $e->getResponse()->getBody()->getContents();
+            $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Gallery']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
 
-            // Si l'API distante retourne déjà un JSON d'erreur, on le transmet
-            $response->getBody()->write($errorBody ?: json_encode([
-                'message' => 'Erreur lors de l\'appel au service distant'
-            ]));
+        } catch (ConnectException $e) {
+            $response->getBody()->write(json_encode(['message' => 'Service Gallery injoignable']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(503);
 
-            return $response
-                ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                ->withStatus($statusCode);
-
-        } catch (ConnectException | ServerException $e) {
-            // Erreurs 5xx
-            $statusCode = $e->getResponse()->getStatusCode();
+        } catch (ServerException $e) {
             $errorBody = $e->getResponse()->getBody()->getContents();
-
-            // Si l'API distante retourne déjà un JSON d'erreur, on le transmet
-            $response->getBody()->write($errorBody ?: json_encode([
-                'message' => 'Erreur interne du service distant'
-            ]));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                ->withStatus($statusCode);
+            $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur interne service Gallery']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
 }

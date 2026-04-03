@@ -2,8 +2,8 @@
 
 namespace photo\core\application\usecases;
 
-use photo\core\application\ports\api\PhotoDTO;
 use photo\core\application\ports\api\ServicePhotoInterface;
+use photo\core\application\ports\api\PhotoDTO;
 use photo\core\application\ports\spi\repositoryInterfaces\PhotoRepositoryInterface;
 
 class ServicePhoto implements ServicePhotoInterface
@@ -15,23 +15,25 @@ class ServicePhoto implements ServicePhotoInterface
         $this->photoRepository = $photoRepository;
     }
 
-    public function getPhoto(int $id): PhotoDTO
+    public function getPhoto(string $id): PhotoDTO
     {
         $photo = $this->photoRepository->findOneById($id);
+        return new PhotoDTO($photo);
+    }
 
-        return new PhotoDTO(
-            id: $photo->id,
-            photographerId: $photo->photographerId,
-//            id: $photo->id->toString(),
-//            photographerId: $photo->photographerId->toString(),
-            mimeType: $photo->mimeType,
-//            mimeType: $photo->mimeType->value, // Ou ->toString() selon ta classe MimeType
-            sizeBytes: $photo->sizeBytes,
-            originalFilename: $photo->originalFilename,
-            s3Key: $photo->s3Key,
-            uploadedAt: $photo->uploadedAt,
-//            uploadedAt: $photo->uploadedAt->format(DateTime::ATOM),
-            title: $photo->title
+    public function createPhoto(string $id, string $photographerId, string $mimeType, int $sizeBytes, string $originalFilename, string $s3Key, string $title): void
+    {
+        $photo = new \photo\core\domain\entities\galery\Photo(
+            id: \Ramsey\Uuid\Uuid::fromString($id),
+            photographerId: \Ramsey\Uuid\Uuid::fromString($photographerId),
+            mimeType: $mimeType,
+            sizeBytes: $sizeBytes,
+            originalFilename: $originalFilename,
+            s3Key: $s3Key,
+            uploadedAt: new \DateTime(),
+            title: $title
         );
+
+        $this->photoRepository->save($photo);
     }
 }
