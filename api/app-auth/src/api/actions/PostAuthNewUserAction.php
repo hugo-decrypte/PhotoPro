@@ -7,6 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpInternalServerErrorException;
 use photopro\api\dto\auth\CredentialsDTO;
+use photopro\api\exceptions\HttpConflictException;
 use photopro\api\providers\auth\AuthnProviderInterface;
 use photopro\api\providers\auth\JWTManager;
 use photopro\core\application\ports\spi\exceptions\DatabaseException;
@@ -40,6 +41,10 @@ class PostAuthNewUserAction extends AbstractAction
         try {
             $this->authnProvider->register($credentialDTO);
         } catch (DatabaseException $e) {
+            $dbMessage = strtolower($e->getMessage());
+            if (str_contains($dbMessage, 'unique') || str_contains($dbMessage, 'duplicate')) {
+                throw new HttpConflictException($rq, "Cet email ou ce pseudo est déjà utilisé.");
+            }
             throw new HttpInternalServerErrorException($rq, "Erreur interne");
         }
 
