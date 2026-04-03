@@ -48,6 +48,7 @@ class AuthMiddleware implements MiddlewareInterface
 
             // Token valide
             $userData = json_decode($response->getBody()->getContents(), true);
+            $request = $request->withHeader('X-Photographer-Id', (string) $userData['user']['id']);
             $body = $request->getParsedBody();
             $body['profile'] = $userData['user'];
             $request = $request->withParsedBody($body);
