@@ -1,36 +1,28 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
+import { createGallery } from '../services/galleryApi'
+import { normalizeApiError } from '../lib/apiError'
+
+const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
+
+const router = useRouter()
 
 const title = ref('')
 const description = ref('')
 const visibility = ref('public')
 const clientEmail = ref('')
-const accessCode = ref('')
-const isPublished = ref(false)
-const coverPhotoId = ref('')
-const selectedPhotoIds = ref([])
+const clientName = ref('')
+const clientPhone = ref('')
 
 const errorMessage = ref('')
 const successMessage = ref('')
 const loading = ref(false)
-
-const photos = [
-  { id: 'p1', label: 'mokujin.jpg' },
-  { id: 'p2', label: 'mokujin2.jpg' },
-  { id: 'p3', label: 'jinton.png' },
-]
+const selectedPhotoIds = ref([])
+const selectedPhotos = ref([])
 
 const isPrivate = computed(() => visibility.value === 'private')
-
-function togglePhoto(photoId) {
-  const i = selectedPhotoIds.value.indexOf(photoId)
-  if (i >= 0) {
-    selectedPhotoIds.value.splice(i, 1)
-  } else {
-    selectedPhotoIds.value.push(photoId)
-  }
-}
 
 async function submit() {
   errorMessage.value = ''
@@ -42,27 +34,80 @@ async function submit() {
   }
 
   if (isPrivate.value && !clientEmail.value.trim()) {
-    errorMessage.value = "email client est obligatoire pour une galerie privée."
+    errorMessage.value = 'Email client obligatoire pour une galerie privée.'
     return
   }
 
-  if (isPrivate.value && !accessCode.value.trim()) {
-    errorMessage.value = 'Le code d acces est obligatoire pour une galerie privée'
-    return
+  const payload = {
+    title: title.value.trim(),
+    description: description.value.trim(),
+    type: isPrivate.value ? 'private' : 'public',
   }
 
-  if (isPublished.value && selectedPhotoIds.value.length === 0) {
-    errorMessage.value = 'Impossible de publier une galerie sans photo.'
-    return
+  if (isPrivate.value) {
+    payload.client_email = clientEmail.value.trim()
+    if (clientName.value.trim()) {
+      payload.client_name = clientName.value.trim()
+    }
+    if (clientPhone.value.trim()) {
+      payload.client_phone = clientPhone.value.trim()
+    }
+  }
+  if (selectedPhotoIds.value.length) {
+    // Prévu pour rattachement backend dès que l'endpoint est disponible.
+    payload.photo_ids = [...selectedPhotoIds.value]
   }
 
   loading.value = true
   try {
-    successMessage.value = 'Galerie validée localement. En attente du branchement backend.'
+    const result = await createGallery(payload)
+    if (!result?.success) {
+      throw new Error(result?.error || 'Création impossible.')
+    }
+    successMessage.value = 'Galerie créée avec succès.'
+    title.value = ''
+    description.value = ''
+    visibility.value = 'public'
+    clientEmail.value = ''
+    clientName.value = ''
+    clientPhone.value = ''
+    selectedPhotoIds.value = []
+    selectedPhotos.value = []
+    sessionStorage.removeItem(GALLERY_PREFILL_STORAGE_KEY)
+    await router.push({ name: 'gallery' })
+  } catch (err) {
+    errorMessage.value = normalizeApiError(err).message || err?.message || 'Création impossible.'
   } finally {
     loading.value = false
   }
 }
+
+function loadPrefillFromSelection() {
+  const raw = sessionStorage.getItem(GALLERY_PREFILL_STORAGE_KEY)
+  if (!raw) {
+    return
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    const ids = Array.isArray(parsed?.photoIds) ? parsed.photoIds : []
+    const photos = Array.isArray(parsed?.photos) ? parsed.photos : []
+    selectedPhotoIds.value = ids.map((id) => String(id))
+    selectedPhotos.value = photos
+      .filter((p) => p && p.id)
+      .map((p) => ({
+        id: String(p.id),
+        title: String(p.title || p.originalName || 'Sans titre'),
+      }))
+  } catch {
+    selectedPhotoIds.value = []
+    selectedPhotos.value = []
+  }
+}
+
+onMounted(() => {
+  loadPrefillFromSelection()
+})
 </script>
 
 <template>
@@ -72,6 +117,15 @@ async function submit() {
       <h1 class="app-shell__title">Créer une galerie</h1>
 
       <form class="gallery-edit-form" @submit.prevent="submit">
+        <div v-if="selectedPhotoIds.length" class="gallery-edit-form__prefill">
+          <p class="gallery-edit-form__prefill-title">
+            Photos présélectionnées depuis l'écran Photos : {{ selectedPhotoIds.length }}
+          </p>
+          <ul class="gallery-edit-form__prefill-list">
+            <li v-for="photo in selectedPhotos" :key="photo.id">{{ photo.title }} ({{ photo.id }})</li>
+          </ul>
+        </div>
+
         <div>
           <label>Titre de la galerie</label>
           <input v-model="title" type="text" placeholder="Ex: Vacances 2026" />
@@ -83,10 +137,10 @@ async function submit() {
         </div>
 
         <div>
-          <label>Visibilite</label>
+          <label>Visibilité</label>
           <select v-model="visibility">
             <option value="public">Publique</option>
-            <option value="private">Privee</option>
+            <option value="private">Privée</option>
           </select>
         </div>
 
@@ -96,41 +150,21 @@ async function submit() {
         </div>
 
         <div v-if="isPrivate">
-          <label>Code d acces</label>
-          <input v-model="accessCode" type="text" placeholder="CODE123" />
+          <label>Nom client (optionnel)</label>
+          <input v-model="clientName" type="text" placeholder="Nom du client" />
         </div>
 
-        <div>
-          <label>Photo d entete</label>
-          <select v-model="coverPhotoId">
-            <option value="">Aucune</option>
-            <option v-for="photo in photos" :key="photo.id" :value="photo.id">
-              {{ photo.label }}
-            </option>
-          </select>
+        <div v-if="isPrivate">
+          <label>Téléphone client (optionnel)</label>
+          <input v-model="clientPhone" type="text" placeholder="+33..." />
         </div>
 
-        <div>
-          <label>
-            <input v-model="isPublished" type="checkbox" />
-            Publier la galerie
-          </label>
-        </div>
-
-        <div>
-          <p>Photos de la galerie</p>
-          <label v-for="photo in photos" :key="photo.id" style="display: block">
-            <input
-              type="checkbox"
-              :checked="selectedPhotoIds.includes(photo.id)"
-              @change="togglePhoto(photo.id)"
-            />
-            {{ photo.label }}
-          </label>
-        </div>
+        <p v-if="isPrivate" class="gallery-edit-form__hint">
+          Le code d'accès privé est généré automatiquement côté backend.
+        </p>
 
         <button type="submit" :disabled="loading">
-          {{ loading ? 'Création...' : 'Créer la galerie' }}
+          {{ loading ? 'Création…' : 'Créer la galerie' }}
         </button>
 
         <p v-if="errorMessage" class="gallery-edit-form__msg gallery-edit-form__msg--error">{{ errorMessage }}</p>
@@ -173,6 +207,35 @@ async function submit() {
 .gallery-edit-form textarea {
   min-height: 5rem;
   resize: vertical;
+}
+
+.gallery-edit-form__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6b6b78;
+}
+
+.gallery-edit-form__prefill {
+  padding: 0.75rem;
+  border: 1px solid #dfe4ff;
+  border-radius: 8px;
+  background: #f7f9ff;
+}
+
+.gallery-edit-form__prefill-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3a3a45;
+}
+
+.gallery-edit-form__prefill-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  max-height: 9rem;
+  overflow: auto;
+  color: #5a5a67;
+  font-size: 0.8rem;
 }
 
 .gallery-edit-form button[type='submit'] {

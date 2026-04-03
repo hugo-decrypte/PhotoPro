@@ -1,12 +1,15 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import { deletePhoto, uploadPhoto } from '../services/photoApi'
 import { useAuthStore } from '../stores/auth'
 
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
+const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
 
+const router = useRouter()
 const selectedIds = ref([])
 const authStore = useAuthStore()
 const fileInputRef = ref(null)
@@ -64,6 +67,32 @@ function toggleSelection(id) {
 
 function clearSelection() {
   selectedIds.value = []
+}
+
+function createGalleryFromSelection() {
+  if (!selectedIds.value.length) {
+    return
+  }
+
+  const selectedPhotos = photos.value
+    .filter((p) => selectedIds.value.includes(p.id))
+    .map((p) => ({
+      id: p.id,
+      title: p.title || p.originalName || 'Sans titre',
+      originalName: p.originalName || '',
+      thumbnailUrl: p.thumbnailUrl || p.url || '',
+    }))
+
+  sessionStorage.setItem(
+    GALLERY_PREFILL_STORAGE_KEY,
+    JSON.stringify({
+      photoIds: [...selectedIds.value],
+      photos: selectedPhotos,
+      createdAt: Date.now(),
+    }),
+  )
+
+  router.push({ name: 'gallery-new' })
 }
 
 async function deleteSelectedPhotos() {
@@ -233,6 +262,9 @@ onMounted(() => {
       <p v-if="selectedIds.length">
         {{ selectedIds.length }} photo(s) sélectionnée(s).
         <button type="button" class="photos-toolbar__btn" @click="clearSelection">Tout désélectionner</button>
+        <button type="button" class="photos-toolbar__btn photos-toolbar__btn--primary" @click="createGalleryFromSelection">
+          Créer une galerie avec la sélection
+        </button>
         <button
           type="button"
           class="photos-toolbar__btn photos-toolbar__btn--danger"
@@ -283,6 +315,16 @@ onMounted(() => {
 
 .photos-toolbar__btn:hover {
   background: #e4e8ff;
+}
+
+.photos-toolbar__btn--primary {
+  border-color: #94a8f9;
+  background: #94a8f9;
+  color: #fff;
+}
+
+.photos-toolbar__btn--primary:hover {
+  background: #7f96f6;
 }
 
 .photos-toolbar__btn--danger {

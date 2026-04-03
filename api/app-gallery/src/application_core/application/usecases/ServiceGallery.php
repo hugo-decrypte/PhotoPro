@@ -40,10 +40,12 @@ class ServiceGallery implements ServiceGalleryInterface
             throw new \InvalidArgumentException('Titre obligatoire');
         }
 
-        $type = $data['type'] ?? 'public';
+        $type = strtolower((string) ($data['type'] ?? 'public'));
         if (!in_array($type, ['public', 'private'], true)) {
             throw new \InvalidArgumentException('Type invalide');
         }
+
+        $dbType = strtoupper($type);
 
         $galleryId = Uuid::uuid4()->toString();
 
@@ -52,8 +54,8 @@ class ServiceGallery implements ServiceGalleryInterface
             'photographer_id' => $photographerId,
             'title' => $title,
             'description' => $data['description'] ?? null,
-            'status' => 'draft',
-            'type' => $type,
+            'status' => 'DRAFT',
+            'type' => $dbType,
             'cover_photo_id' => null,
             'created_at' => date('Y-m-d H:i:s'),
             'published_at' => null,
