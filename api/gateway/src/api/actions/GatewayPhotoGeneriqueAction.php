@@ -24,6 +24,11 @@ class GatewayPhotoGeneriqueAction
         return $this->transfererRequete($request, $response, "/photos/$id_photo");
     }
 
+    public function uploadPhoto(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, "/photos");
+    }
+
     public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface
     {
         $method = $request->getMethod();
@@ -35,12 +40,32 @@ class GatewayPhotoGeneriqueAction
             $options['headers']['Authorization'] = $authHeader;
         }
 
-        if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
+        // Gestion du body et des fichiers
+        $contentType = $request->getHeaderLine('Content-Type');
+
+        if (str_contains($contentType, 'multipart/form-data')) {
+            $multipart = [];
+            // Ajouter les champs texte
+            foreach ($request->getParsedBody() ?: [] as $name => $value) {
+                $multipart[] = ['name' => $name, 'contents' => (string)$value];
+            }
+            // Ajouter les fichiers
+            foreach ($request->getUploadedFiles() as $name => $file) {
+                if ($file->getError() === UPLOAD_ERR_OK) {
+                    $multipart[] = [
+                        'name'     => $name,
+                        'contents' => $file->getStream(),
+                        'filename' => $file->getClientFilename()
+                    ];
+                }
+            }
+            $options['multipart'] = $multipart;
+        } elseif (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
             if (is_array($body) || is_object($body)) {
                 $options['json'] = $body;
             } else {
                 $options['body'] = $body;
-                $options['headers']['Content-Type'] = $request->getHeaderLine('Content-Type') ?: 'application/json';
+                $options['headers']['Content-Type'] = $contentType ?: 'application/json';
             }
         }
 
@@ -57,9 +82,14 @@ class GatewayPhotoGeneriqueAction
             $errorBody = $e->getResponse()->getBody()->getContents();
             $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Photo']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
-        } catch (ConnectException | ServerException $e) {
+        } catch (ConnectException $e) {
             $response->getBody()->write(json_encode(['message' => 'Service Photo injoignable']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(504);
+        } catch (ServerException $e) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            $errorBody = $e->getResponse()->getBody()->getContents();
+            $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Photo (500)']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
         }
     }
 }
