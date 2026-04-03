@@ -11,4 +11,5 @@ interface ServicePhotoInterface
      */
     public function getPhoto(string $id): PhotoDTO;
     public function createPhoto(string $id, string $photographerId, string $mimeType, int $sizeBytes, string $originalFilename, string $s3Key, string $title): void;
+    public function deletePhoto(string $id_photo);
 }

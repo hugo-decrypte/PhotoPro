@@ -13,4 +13,6 @@ interface PhotoRepositoryInterface
      */
     public function findOneById(string $id): Photo;
 
+    public function deletePhoto(string $id_photo);
+
 }
