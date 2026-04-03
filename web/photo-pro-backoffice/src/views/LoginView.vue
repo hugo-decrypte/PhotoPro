@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import AuthLayout from '../components/AuthLayout.vue'
 import { normalizeApiError } from '../lib/apiError'
 import { login } from '../services/authApi'
 import { useAuthStore } from '../stores/auth'
@@ -53,17 +54,42 @@ async function submit() {
 </script>
 
 <template>
-  <main>
-    <h1>Connexion</h1>
-    <form @submit.prevent="submit">
-      <input v-model="email" type="email" placeholder="Email" />
-      <input v-model="password" type="password" placeholder="Mot de passe" />
-      <button type="submit" :disabled="loading">Se connecter</button>
+  <AuthLayout title="Connexion">
+    <form class="auth-form" @submit.prevent="submit">
+      <div class="auth-form__field">
+        <label for="login-email">Email</label>
+        <input
+          id="login-email"
+          v-model="email"
+          class="auth-form__input"
+          type="email"
+          name="email"
+          autocomplete="email"
+          placeholder="vous@exemple.com"
+        />
+      </div>
+      <div class="auth-form__field">
+        <label for="login-password">Mot de passe</label>
+        <input
+          id="login-password"
+          v-model="password"
+          class="auth-form__input"
+          type="password"
+          name="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+        />
+      </div>
+      <button class="auth-form__submit" type="submit" :disabled="loading">
+        {{ loading ? 'Connexion…' : 'Se connecter' }}
+      </button>
     </form>
-    <p v-if="errorMessage">{{ errorMessage }}</p>
-    <p>
+
+    <p v-if="errorMessage" class="auth-card__error" role="alert">{{ errorMessage }}</p>
+
+    <p class="auth-card__switch">
       Pas encore de compte ?
-      <RouterLink :to="{ name: 'register' }">Inscription</RouterLink>
+      <RouterLink :to="{ name: 'register' }">Créer un compte</RouterLink>
     </p>
-  </main>
+  </AuthLayout>
 </template>

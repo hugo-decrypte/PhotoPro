@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import AuthLayout from '../components/AuthLayout.vue'
 import { normalizeApiError } from '../lib/apiError'
 import { register } from '../services/authApi'
 import { useAuthStore } from '../stores/auth'
@@ -53,17 +54,42 @@ async function submit() {
 </script>
 
 <template>
-  <main>
-    <h1>Inscription</h1>
-    <form @submit.prevent="submit">
-      <input v-model="email" type="email" placeholder="Email" />
-      <input v-model="password" type="password" placeholder="Mot de passe" />
-      <button type="submit" :disabled="loading">Creer un compte</button>
+  <AuthLayout title="Inscription">
+    <form class="auth-form" @submit.prevent="submit">
+      <div class="auth-form__field">
+        <label for="register-email">Email</label>
+        <input
+          id="register-email"
+          v-model="email"
+          class="auth-form__input"
+          type="email"
+          name="email"
+          autocomplete="email"
+          placeholder="vous@exemple.com"
+        />
+      </div>
+      <div class="auth-form__field">
+        <label for="register-password">Mot de passe</label>
+        <input
+          id="register-password"
+          v-model="password"
+          class="auth-form__input"
+          type="password"
+          name="password"
+          autocomplete="new-password"
+          placeholder="••••••••"
+        />
+      </div>
+      <button class="auth-form__submit" type="submit" :disabled="loading">
+        {{ loading ? 'Création…' : 'Créer un compte' }}
+      </button>
     </form>
-    <p v-if="errorMessage">{{ errorMessage }}</p>
-    <p>
-      Deja un compte ?
-      <RouterLink :to="{ name: 'login' }">Connexion</RouterLink>
+
+    <p v-if="errorMessage" class="auth-card__error" role="alert">{{ errorMessage }}</p>
+
+    <p class="auth-card__switch">
+      Déjà un compte ?
+      <RouterLink :to="{ name: 'login' }">Se connecter</RouterLink>
     </p>
-  </main>
+  </AuthLayout>
 </template>
