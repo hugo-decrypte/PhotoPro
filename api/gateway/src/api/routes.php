@@ -38,6 +38,9 @@ return function(App $app): App {
     $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto')
         ->setName('api_photo_get_photo');
 
+    $app->post('/photos', GatewayPhotoGeneriqueAction::class . ':uploadPhoto')
+        ->setName('api_photo_upload');
+
 
     return $app;
 };

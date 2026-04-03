@@ -11,6 +11,6 @@ interface PhotoRepositoryInterface
      * 
      * @return Photo
      */
-    public function findOneById(int $id): Photo;
+    public function findOneById(string $id): Photo;
 
 }

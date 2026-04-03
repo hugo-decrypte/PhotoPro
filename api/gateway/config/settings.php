@@ -6,6 +6,7 @@ use Psr\Http\Client\ClientInterface;
 use GuzzleHttp\Client;
 use photopro\api\actions\GatewayAuthGeneriqueAction;
 use photopro\api\actions\GatewayGalleryGeneriqueAction;
+use photopro\api\actions\GatewayPhotoGeneriqueAction;
 use photopro\api\middlewares\AuthMiddleware;
 
 
