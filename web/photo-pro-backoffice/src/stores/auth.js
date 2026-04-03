@@ -11,6 +11,19 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => Boolean(token.value))
 
   const userId = computed(() => (user.value?.id ? String(user.value.id) : ''))
+  const displayName = computed(() => {
+    const pseudo = String(user.value?.pseudo || '').trim()
+    if (pseudo) {
+      return pseudo
+    }
+    const firstName = String(user.value?.firstName || '').trim()
+    const lastName = String(user.value?.lastName || '').trim()
+    const fullName = `${firstName} ${lastName}`.trim()
+    if (fullName) {
+      return fullName
+    }
+    return 'Pseudo'
+  })
 
   function loadFromStorage() {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -25,7 +38,13 @@ export const useAuthStore = defineStore('auth', () => {
       const u = parsed.user
       user.value =
         u && u.id != null && u.id !== ''
-          ? { id: String(u.id), email: String(u.email || '') }
+          ? {
+              id: String(u.id),
+              email: String(u.email || ''),
+              pseudo: String(u.pseudo || ''),
+              firstName: String(u.firstName || ''),
+              lastName: String(u.lastName || ''),
+            }
           : null
     } catch {
       clear()
@@ -53,9 +72,14 @@ export const useAuthStore = defineStore('auth', () => {
     if (!profile || profile.id == null || profile.id === '') {
       user.value = null
     } else {
+      const incomingId = String(profile.id)
+      const currentPseudo = user.value?.id === incomingId ? String(user.value?.pseudo || '') : ''
       user.value = {
-        id: String(profile.id),
+        id: incomingId,
         email: String(profile.email || ''),
+        pseudo: String(profile.pseudo || profile.user_name || currentPseudo),
+        firstName: String(profile.first_name || profile.firstName || ''),
+        lastName: String(profile.name || profile.lastName || ''),
       }
     }
     persist()
@@ -78,6 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     user,
     userId,
+    displayName,
     isAuthenticated,
     loadFromStorage,
     setTokens,
