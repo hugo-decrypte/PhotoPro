@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
+import AppHeader from '../components/AppHeader.vue'
 
 const title = ref('')
 const description = ref('')
@@ -65,78 +66,147 @@ async function submit() {
 </script>
 
 <template>
-  <main>
-    <h1>Créer une galerie</h1>
-    <nav>
-      <RouterLink :to="{ name: 'photos' }">Photos</RouterLink> |
-      <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink> |
-      <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
-    </nav>
+  <div class="app-shell">
+    <AppHeader />
+    <main class="app-shell__main">
+      <h1 class="app-shell__title">Créer une galerie</h1>
 
-    <form @submit.prevent="submit">
-      <div>
-        <label>Titre de la galerie</label>
-        <input v-model="title" type="text" placeholder="Ex: Vacances 2026" />
-      </div>
+      <form class="gallery-edit-form" @submit.prevent="submit">
+        <div>
+          <label>Titre de la galerie</label>
+          <input v-model="title" type="text" placeholder="Ex: Vacances 2026" />
+        </div>
 
-      <div>
-        <label>Description</label>
-        <textarea v-model="description" placeholder="Décrivez la galerie..." />
-      </div>
+        <div>
+          <label>Description</label>
+          <textarea v-model="description" placeholder="Décrivez la galerie..." />
+        </div>
 
-      <div>
-        <label>Visibilite</label>
-        <select v-model="visibility">
-          <option value="public">Publique</option>
-          <option value="private">Privee</option>
-        </select>
-      </div>
+        <div>
+          <label>Visibilite</label>
+          <select v-model="visibility">
+            <option value="public">Publique</option>
+            <option value="private">Privee</option>
+          </select>
+        </div>
 
-      <div v-if="isPrivate">
-        <label>Email client</label>
-        <input v-model="clientEmail" type="email" placeholder="client@mail.com" />
-      </div>
+        <div v-if="isPrivate">
+          <label>Email client</label>
+          <input v-model="clientEmail" type="email" placeholder="client@mail.com" />
+        </div>
 
-      <div v-if="isPrivate">
-        <label>Code d acces</label>
-        <input v-model="accessCode" type="text" placeholder="CODE123" />
-      </div>
+        <div v-if="isPrivate">
+          <label>Code d acces</label>
+          <input v-model="accessCode" type="text" placeholder="CODE123" />
+        </div>
 
-      <div>
-        <label>Photo d entete</label>
-        <select v-model="coverPhotoId">
-          <option value="">Aucune</option>
-          <option v-for="photo in photos" :key="photo.id" :value="photo.id">
+        <div>
+          <label>Photo d entete</label>
+          <select v-model="coverPhotoId">
+            <option value="">Aucune</option>
+            <option v-for="photo in photos" :key="photo.id" :value="photo.id">
+              {{ photo.label }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label>
+            <input v-model="isPublished" type="checkbox" />
+            Publier la galerie
+          </label>
+        </div>
+
+        <div>
+          <p>Photos de la galerie</p>
+          <label v-for="photo in photos" :key="photo.id" style="display: block">
+            <input
+              type="checkbox"
+              :checked="selectedPhotoIds.includes(photo.id)"
+              @change="togglePhoto(photo.id)"
+            />
             {{ photo.label }}
-          </option>
-        </select>
-      </div>
+          </label>
+        </div>
 
-      <div>
-        <label>
-          <input v-model="isPublished" type="checkbox" />
-          Publier la galerie
-        </label>
-      </div>
+        <button type="submit" :disabled="loading">
+          {{ loading ? 'Création...' : 'Créer la galerie' }}
+        </button>
 
-      <div>
-        <p>Photos de la galerie</p>
-        <label v-for="photo in photos" :key="photo.id" style="display: block">
-          <input
-            type="checkbox"
-            :checked="selectedPhotoIds.includes(photo.id)"
-            @change="togglePhoto(photo.id)"
-          />
-          {{ photo.label }}
-        </label>
-      </div>
-
-      <button type="submit" :disabled="loading">
-        {{ loading ? 'Création...' : 'Créer la galerie' }}
-      </button>
-    </form>
-
-    <p v-if="errorMessage">{{ errorMessage }}</p>
-    <p v-if="successMessage">{{ successMessage }}</p>
-  </main>
+        <p v-if="errorMessage" class="gallery-edit-form__msg gallery-edit-form__msg--error">{{ errorMessage }}</p>
+        <p v-if="successMessage" class="gallery-edit-form__msg gallery-edit-form__msg--success">
+          {{ successMessage }}
+        </p>
+      </form>
+    </main>
+  </div>
 </template>
+
+<style scoped>
+.gallery-edit-form {
+  max-width: 32rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gallery-edit-form label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #3a3a45;
+}
+
+.gallery-edit-form input[type='text'],
+.gallery-edit-form input[type='email'],
+.gallery-edit-form select,
+.gallery-edit-form textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #d8d8e4;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+.gallery-edit-form textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.gallery-edit-form button[type='submit'] {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #94a8f9;
+  border-radius: 6px;
+  background: #94a8f9;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gallery-edit-form button[type='submit']:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.gallery-edit-form button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gallery-edit-form__msg {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.gallery-edit-form__msg--error {
+  color: #c62828;
+}
+
+.gallery-edit-form__msg--success {
+  color: #2e7d32;
+}
+</style>
