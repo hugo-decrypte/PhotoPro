@@ -1,6 +1,7 @@
 <?php
 
 
+use photopro\api\actions\GatewayPhotoGeneriqueAction;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientInterface;
 use GuzzleHttp\Client;

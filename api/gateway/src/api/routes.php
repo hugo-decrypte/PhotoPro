@@ -1,43 +1,46 @@
 <?php
 declare(strict_types=1);
 
-namespace toubilib\api;
+namespace photopro\api;
 
 use Slim\App;
 use photopro\api\actions\GatewayAuthGeneriqueAction;
 use photopro\api\actions\GatewayPhotoGeneriqueAction;
 use photopro\api\actions\GatewayGalleryGeneriqueAction;
+use photopro\api\middlewares\AuthMiddleware;
 
 return function(App $app): App {
 
-    /**
-     * CORS : options pour les requêtes preflight
-     */
+    // CORS preflight
     $app->options('/{routes:.+}', function ($request, $response) {
         return $response;
     });
 
-    // Routes pour l'authentification (publiques)
-    $app->post('/register', GatewayAuthGeneriqueAction::class . ':register')
-        ->setName('api_auth_register');
+    // ── (publiques) ──────────────────────────────────────────────────
+    $app->post('/register', GatewayAuthGeneriqueAction::class . ':register');
+    $app->post('/signin',   GatewayAuthGeneriqueAction::class . ':signin');
+    $app->post('/refresh',  GatewayAuthGeneriqueAction::class . ':refresh');
+    $app->post('/tokens/validate', GatewayAuthGeneriqueAction::class . ':validateToken');
 
-    $app->post('/signin', GatewayAuthGeneriqueAction::class . ':signin')
-        ->setName('api_auth_signin');
+    $app->get('/galeries', GatewayGalleryGeneriqueAction::class . ':getGalleries');
+    $app->get('/galeries/{id}/privee', GatewayGalleryGeneriqueAction::class . ':getPrivateGallery');
+    $app->get('/galeries/{id}/comments', GatewayGalleryGeneriqueAction::class . ':getComments');
 
-    $app->post('/refresh', GatewayAuthGeneriqueAction::class . ':refresh')
-        ->setName('api_auth_refresh');
+    $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto');
 
-    $app->post('/tokens/validate', GatewayAuthGeneriqueAction::class . ':validateToken')
-        ->setName('api_auth_validate_token');
 
-    // Route pour les gallery
-    $app->get('/galeries', GatewayGalleryGeneriqueAction::class . ':getGallery')
-        ->setName('api_gallery_get_gallery');
+    // ── Gallery (protégées JWT) ───────────────────────────────────────────
+    $app->group('', function ($group) {
+        $group->patch('/galeries/{id}/publish', GatewayGalleryGeneriqueAction::class . ':publishGallery');
+        $group->patch('/galeries/{id}/unpublish', GatewayGalleryGeneriqueAction::class . ':unpublishGallery');
+        $group->post('/galeries/{id}/photos/{photoId}/comments', GatewayGalleryGeneriqueAction::class . ':addComment');
+    })->add(AuthMiddleware::class);
 
-    // Routes pour les photos
-    $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto')
-        ->setName('api_photo_get_photo');
-
+    // ── Photo (protégées JWT) ─────────────────────────────────────────────
+    $app->group('', function ($group) {
+        $group->post('/photos', GatewayPhotoGeneriqueAction::class . ':uploadPhoto');
+        $group->delete('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':deletePhoto');
+    })->add(AuthMiddleware::class);
 
     return $app;
 };
