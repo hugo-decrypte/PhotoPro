@@ -2,30 +2,10 @@
 declare(strict_types=1);
 
 use Slim\App;
-use toubilib\api\actions\GetAllPraticienAction;
-use toubilib\api\actions\GetPatientDetailAction;
-use toubilib\api\actions\GetPraticienCreneauxAction;
-use toubilib\api\actions\GetRDVDetailsAction;
-use toubilib\api\actions\PatchHonorerRDVAction;
-use toubilib\api\actions\DeleteAnnulerRDVAction;
-use toubilib\api\actions\PostAuthAction;
-use toubilib\api\actions\PostAuthNewUserAction;
-use toubilib\api\actions\PostAuthRefreshAction;
-use toubilib\api\actions\PostRDVCreerAction;
-use toubilib\api\actions\GetSearchRDVPatientAction;
-use toubilib\api\actions\GetSearchRDVPraticienAction;
-use toubilib\api\actions\GetPraticienDetailAction;
-//use toubilib\api\middlewares\AuthnMiddleware;
-//use toubilib\api\middlewares\AuthzPatientMiddleware;
-//use toubilib\api\middlewares\AuthzPraticienMiddleware;
-use toubilib\api\actions\ValidateTokenAction;
-use toubilib\api\middlewares\AuthzRDVMiddleware;
-use toubilib\api\middlewares\CheckNewRDV;
-use toubilib\api\middlewares\CorsMiddleware;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\core\application\usecases\authz\AuthzPatientService;
-use toubilib\core\application\usecases\authz\AuthzPraticienService;
-use toubilib\core\application\usecases\ServiceRDVInterface;
+use photopro\api\actions\PostAuthAction;
+use photopro\api\actions\PostAuthNewUserAction;
+use photopro\api\actions\PostAuthRefreshAction;
+use photopro\api\actions\ValidateTokenAction;
 
 return function(App $app): App {
 

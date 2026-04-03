@@ -1,15 +1,15 @@
 <?php
 
-namespace toubilib\api\actions;
+namespace photopro\api\actions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpInternalServerErrorException;
-use toubilib\api\dto\auth\CredentialsDTO;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\api\providers\auth\JWTManager;
-use toubilib\core\application\ports\spi\exceptions\DatabaseException;
+use photopro\api\dto\auth\CredentialsDTO;
+use photopro\api\providers\auth\AuthnProviderInterface;
+use photopro\api\providers\auth\JWTManager;
+use photopro\core\application\ports\spi\exceptions\DatabaseException;
 
 class PostAuthNewUserAction extends AbstractAction
 {
@@ -30,7 +30,13 @@ class PostAuthNewUserAction extends AbstractAction
             throw new HttpBadRequestException($rq, "l'email et le mdp sont requis.");
         }
 
-        $credentialDTO = new CredentialsDTO($data['email'], $data['password']);
+        $credentialDTO = new CredentialsDTO(
+            $data['email'], 
+            $data['password'],
+            $data['first_name'] ?? '',
+            $data['name'] ?? '',
+            $data['pseudo'] ?? ''
+        );
         try {
             $this->authnProvider->register($credentialDTO);
         } catch (DatabaseException $e) {
@@ -46,8 +52,7 @@ class PostAuthNewUserAction extends AbstractAction
             'refresh_expires_in' => JWTManager::REFRESH_TOKEN_DURATION,
             'user' => [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ];
 

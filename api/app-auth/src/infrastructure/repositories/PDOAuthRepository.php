@@ -1,11 +1,11 @@
 <?php
 
-namespace toubilib\infra\repositories;
+namespace photopro\infra\repositories;
 
-use toubilib\core\application\ports\spi\exceptions\DatabaseException;
-use toubilib\core\application\ports\spi\exceptions\EntityNotFoundException;
-use toubilib\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
-use toubilib\core\domain\entities\user\User;
+use photopro\core\application\ports\spi\exceptions\DatabaseException;
+use photopro\core\application\ports\spi\exceptions\EntityNotFoundException;
+use photopro\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
+use photopro\core\domain\entities\user\User;
 
 class PDOAuthRepository implements AuthRepositoryInterface
 {
@@ -25,11 +25,11 @@ class PDOAuthRepository implements AuthRepositoryInterface
     {
         try {
             $stmt = $this->pdo->prepare('
-            SELECT *
-            FROM users 
+            SELECT id, email, password_hash as password
+            FROM photographer 
             WHERE email = :email');
             $stmt->execute(['email' => $email]);
-            $userData = $stmt->fetch();
+            $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
         }
@@ -46,9 +46,16 @@ class PDOAuthRepository implements AuthRepositoryInterface
     {
         try {
             $stmt = $this->pdo->prepare('
-            INSERT INTO users (id, email, password, role) 
-            VALUES (:id, :email, :password, :role)');
-            $stmt->execute(['id' => $user->id, 'email' => $user->email, 'password' => $user->password, 'role' => $user->role]);
+            INSERT INTO photographer (id, first_name, name, email, password_hash, pseudo) 
+            VALUES (:id, :first_name, :name, :email, :password_hash, :pseudo)');
+            $stmt->execute([
+                'id' => $user->id, 
+                'first_name' => $user->firstName ?: 'User', 
+                'name' => $user->name ?: 'Photopro', 
+                'email' => $user->email, 
+                'password_hash' => $user->password, 
+                'pseudo' => $user->pseudo ?: explode('@', $user->email)[0]
+            ]);
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());
         }
@@ -60,7 +67,7 @@ class PDOAuthRepository implements AuthRepositoryInterface
     public function deleteUser(User $user): void
     {
         try {
-            $stmt = $this->pdo->prepare('DELETE FROM users WHERE id = :id');
+            $stmt = $this->pdo->prepare('DELETE FROM photographer WHERE id = :id');
             $stmt->execute(['id' => $user->id]);
         } catch (\PDOException $e) {
             throw new DatabaseException($e->getMessage());

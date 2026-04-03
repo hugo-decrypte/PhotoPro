@@ -2,7 +2,7 @@
 
 namespace photopro\core\application\ports\spi\exceptions;
 
-class EntityNotFoundException extends \Exception
+class DatabaseException extends \Exception
 {
 
 }

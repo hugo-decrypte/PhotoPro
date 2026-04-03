@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   photo: {
     type: Object,
@@ -12,16 +14,28 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle'])
 
-function onCheckboxChange() {
+const label = computed(() => {
+  const name = props.photo.title || props.photo.originalName || 'Photo'
+  return props.selected ? `Désélectionner ${name}` : `Sélectionner ${name}`
+})
+
+function toggle() {
   emit('toggle', props.photo.id)
 }
 </script>
 
 <template>
-  <article class="photo-card" :class="{ 'photo-card--selected': selected }">
-    <label class="photo-card__select">
-      <input type="checkbox" :checked="selected" @change="onCheckboxChange" />
-    </label>
+  <article
+    class="photo-card"
+    :class="{ 'photo-card--selected': selected }"
+    role="button"
+    tabindex="0"
+    :aria-pressed="selected"
+    :aria-label="label"
+    @click="toggle"
+    @keydown.enter.prevent="toggle"
+    @keydown.space.prevent="toggle"
+  >
     <img
       class="photo-card__image"
       :src="photo.thumbnailUrl || photo.url"
@@ -40,22 +54,17 @@ function onCheckboxChange() {
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+  cursor: pointer;
+  outline: none;
+}
+
+.photo-card:focus-visible {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #94a8f9;
 }
 
 .photo-card--selected {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px #2563eb33;
-}
-
-.photo-card__select {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 1;
-  background: #fff;
-  border-radius: 4px;
-  padding: 2px;
-  cursor: pointer;
+  border-color: #4a5fc9;
+  box-shadow: 0 0 0 2px rgba(148, 168, 249, 0.55);
 }
 
 .photo-card__image {
@@ -64,11 +73,19 @@ function onCheckboxChange() {
   height: 170px;
   object-fit: cover;
   width: 100%;
+  pointer-events: none;
+  user-select: none;
 }
 
 .photo-card__meta {
   display: grid;
   gap: 0.25rem;
   padding: 0.6rem;
+  user-select: none;
+}
+
+.photo-card__meta strong,
+.photo-card__meta small {
+  pointer-events: none;
 }
 </style>

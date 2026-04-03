@@ -6,6 +6,7 @@
     "ramsey/uuid": "^4.7",
     "php-di/php-di": "^7.0",
     "php-di/slim-bridge": "^3.4",
+    "respect/validation": "^2.3.7",
     "ext-pdo": "*",
     "vlucas/phpdotenv": "^5.5"
   },

@@ -1,12 +1,12 @@
 <?php
 
-namespace toubilib\api\actions;
+namespace photopro\api\actions;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpUnauthorizedException;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\api\providers\auth\JWTManager;
+use photopro\api\providers\auth\AuthnProviderInterface;
+use photopro\api\providers\auth\JWTManager;
 
 class PostAuthRefreshAction extends AbstractAction
 {
@@ -32,8 +32,7 @@ class PostAuthRefreshAction extends AbstractAction
             'refresh_expires_in' => JWTManager::REFRESH_TOKEN_DURATION,
             'user' => [
                 'id' => $authDTO->getId(),
-                'email' => $authDTO->getEmail(),
-                'role' => $authDTO->getRole(),
+                'email' => $authDTO->getEmail()
             ]
         ];
 

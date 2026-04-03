@@ -1,6 +1,6 @@
 <?php
 
-namespace toubilib\api\providers\auth;
+namespace photopro\api\providers\auth;
 
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;

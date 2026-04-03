@@ -2,6 +2,7 @@
 
 namespace photopro\core\application\ports\spi\repositoryInterfaces;
 
+use photopro\core\application\ports\api\InputCommentDTO;
 use photopro\core\domain\entities\galery\Gallery;
 
 interface GalleryRepositoryInterface
@@ -23,7 +24,7 @@ interface GalleryRepositoryInterface
 
     public function countPhotos(string $galleryId): int;
 
-    public function addComment(array $commentData): array;
+    public function addComment(InputCommentDTO $dto);
 
     public function findCommentsByGalleryId(string $galleryId): array;
 }

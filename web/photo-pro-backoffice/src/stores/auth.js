@@ -6,8 +6,11 @@ const STORAGE_KEY = 'photopro_auth'
 export const useAuthStore = defineStore('auth', () => {
   const token = ref('')
   const refreshToken = ref('')
+  const user = ref(null)
 
   const isAuthenticated = computed(() => Boolean(token.value))
+
+  const userId = computed(() => (user.value?.id ? String(user.value.id) : ''))
 
   function loadFromStorage() {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -19,6 +22,11 @@ export const useAuthStore = defineStore('auth', () => {
       const parsed = JSON.parse(raw)
       token.value = parsed.token || ''
       refreshToken.value = parsed.refreshToken || ''
+      const u = parsed.user
+      user.value =
+        u && u.id != null && u.id !== ''
+          ? { id: String(u.id), email: String(u.email || '') }
+          : null
     } catch {
       clear()
     }
@@ -30,6 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
       JSON.stringify({
         token: token.value,
         refreshToken: refreshToken.value,
+        user: user.value,
       }),
     )
   }
@@ -37,6 +46,18 @@ export const useAuthStore = defineStore('auth', () => {
   function setTokens(newToken, newRefreshToken = '') {
     token.value = newToken
     refreshToken.value = newRefreshToken
+    persist()
+  }
+
+  function setUser(profile) {
+    if (!profile || profile.id == null || profile.id === '') {
+      user.value = null
+    } else {
+      user.value = {
+        id: String(profile.id),
+        email: String(profile.email || ''),
+      }
+    }
     persist()
   }
 
@@ -48,15 +69,19 @@ export const useAuthStore = defineStore('auth', () => {
   function clear() {
     token.value = ''
     refreshToken.value = ''
+    user.value = null
     localStorage.removeItem(STORAGE_KEY)
   }
 
   return {
     token,
     refreshToken,
+    user,
+    userId,
     isAuthenticated,
     loadFromStorage,
     setTokens,
+    setUser,
     setAccessToken,
     clear,
   }

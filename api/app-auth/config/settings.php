@@ -2,16 +2,16 @@
 
 use Psr\Container\ContainerInterface;
 
-use toubilib\api\actions\PostAuthAction;
-use toubilib\api\actions\PostAuthNewUserAction;
-use toubilib\api\actions\PostAuthRefreshAction;
-use toubilib\api\actions\ValidateTokenAction;
-use toubilib\api\providers\auth\AuthnProviderInterface;
-use toubilib\api\providers\auth\JWTAuthnProvider;
-use toubilib\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
-use toubilib\core\application\usecases\auth\AuthnService;
-use toubilib\core\application\usecases\auth\AuthnServiceInterface;
-use toubilib\infra\repositories\PDOAuthRepository;
+use photopro\api\actions\PostAuthAction;
+use photopro\api\actions\PostAuthNewUserAction;
+use photopro\api\actions\PostAuthRefreshAction;
+use photopro\api\actions\ValidateTokenAction;
+use photopro\api\providers\auth\AuthnProviderInterface;
+use photopro\api\providers\auth\JWTAuthnProvider;
+use photopro\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
+use photopro\core\application\usecases\auth\AuthnService;
+use photopro\core\application\usecases\auth\AuthnServiceInterface;
+use photopro\infra\repositories\PDOAuthRepository;
 
 return [
 

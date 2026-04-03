@@ -53,7 +53,7 @@ return [
     },
 
 
-    'photopro.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth',
+    'photopro.auth.api' => $_ENV['AUTH_API_URL'] ?? 'http://app-auth:80',
     'photopro.gallery.api' => $_ENV['GALLERY_API_URL'] ?? 'http://app-gallery:80',
     'photopro.photo.api' => $_ENV['PHOTO_API_URL'] ?? 'http://app-photo:80',
 
