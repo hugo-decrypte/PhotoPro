@@ -6,8 +6,11 @@ use photopro\api\actions\PostAuthAction;
 use photopro\api\actions\PostAuthNewUserAction;
 use photopro\api\actions\PostAuthRefreshAction;
 use photopro\api\actions\ValidateTokenAction;
+use photopro\api\actions\GetUserAction;
 
 return function(App $app): App {
+    $app->get('/users/{id}', GetUserAction::class )
+        ->setName('user_id');
 
     //Authentification
     $app->post('/signin[/]', PostAuthAction::class )
