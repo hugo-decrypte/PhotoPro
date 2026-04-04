@@ -73,4 +73,21 @@ class PDOAuthRepository implements AuthRepositoryInterface
             throw new DatabaseException($e->getMessage());
         }
     }
+
+    public function getById(string $id): User {
+        try {
+            $stmt = $this->pdo->prepare('
+            SELECT id, email, password_hash as password
+            FROM photographer 
+            WHERE id = :id');
+            $stmt->execute(['id' => $id]);
+            $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage());
+        }
+        if(!$userData) {
+            throw new EntityNotFoundException("User $id not found");
+        }
+        return User::fromArray($userData);
+    }
 }
