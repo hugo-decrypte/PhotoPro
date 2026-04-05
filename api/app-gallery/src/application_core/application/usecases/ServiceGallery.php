@@ -7,13 +7,13 @@ use photopro\core\application\ports\api\InputCommentDTO;
 use photopro\core\application\ports\api\ServiceGalleryInterface;
 use photopro\core\application\ports\spi\exceptions\EntityNotFoundException;
 use photopro\core\application\ports\spi\repositoryInterfaces\GalleryRepositoryInterface;
+use photopro\core\application\ports\spi\repositoryInterfaces\MailSenderInterface;
+use photopro\core\application\ports\spi\repositoryInterfaces\ServiceAuthAdaptatorInterface;
 use Ramsey\Uuid\Uuid;
 
 class ServiceGallery implements ServiceGalleryInterface
 {
-    public function __construct(
-        private GalleryRepositoryInterface $galleryRepository
-    ) {}
+    public function __construct(private GalleryRepositoryInterface $galleryRepository, private ServiceAuthAdaptatorInterface $adaptator, private MailSenderInterface $mail_sender) {}
 
     public function listOfGalery(): array
     {
@@ -78,7 +78,11 @@ class ServiceGallery implements ServiceGalleryInterface
                 'direct_url' => '/galeries/' . $galleryId . '/privee',
             ];
         }
-
+        $this->mail_sender->send(
+            $clientEmail,
+            'Confirmation création de galerie',
+            'La galerie ' . $title . ' a été créée avec succès.'
+        );
         return $this->galleryRepository->createGallery($galleryData, $privateData);
     }
 
@@ -109,6 +113,13 @@ class ServiceGallery implements ServiceGalleryInterface
             throw new \RuntimeException('Impossible de publier une galerie vide', 409);
         }
 
+        $email = $this->adaptator->getUserEmail($photographerId);
+        $this->mail_sender->send(
+            $email,
+            'Publication galerie',
+            "La galerie " . $gallery['title'] . " vient d'être publiée."
+        );
+
         $this->galleryRepository->publishGallery($galleryId);
     }
 
@@ -123,6 +134,13 @@ class ServiceGallery implements ServiceGalleryInterface
         if ($gallery['photographer_id'] !== $photographerId) {
             throw new \RuntimeException('Accès interdit', 403);
         }
+
+        $email = $this->adaptator->getUserEmail($photographerId);
+        $this->mail_sender->send(
+            $email,
+            'Dépublication galerie',
+            "La galerie " . $gallery['title'] . " vient d'être dépubliée."
+        );
 
         $this->galleryRepository->unpublishGallery($galleryId);
     }
@@ -146,6 +164,13 @@ class ServiceGallery implements ServiceGalleryInterface
         }
         try {
             $this->galleryRepository->addComment($dto);
+
+            $email = $this->adaptator->getUserEmail($gallery['photographer_id']);
+            $this->mail_sender->send(
+                $email,
+                'Nouveau commentaire sur la galerie ' . $gallery['title'],
+                "La galerie " . $gallery['title'] . " a reçu un nouveau commentaire de la part de " . $dto->authorName . '.'
+            );
         } catch (EntityNotFoundException $e) {
             throw new EntityNotFoundException($e);
         } catch (\Error $e) {
