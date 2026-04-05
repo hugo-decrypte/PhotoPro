@@ -248,4 +248,31 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function addPhotosToGallery(string $galleryId, array $photos): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO gallery_photo (gallery_id, photo_id, \"order\", added_at)
+                VALUES (:gallery_id, :photo_id, :order, NOW())
+                ON CONFLICT (gallery_id, photo_id) 
+                DO UPDATE SET \"order\" = EXCLUDED.\"order\"
+            ");
+
+            foreach ($photos as $photo) {
+                $stmt->execute([
+                    'gallery_id' => $galleryId,
+                    'photo_id' => $photo['photo_id'],
+                    'order' => $photo['order'] ?? 0,
+                ]);
+            }
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
 }

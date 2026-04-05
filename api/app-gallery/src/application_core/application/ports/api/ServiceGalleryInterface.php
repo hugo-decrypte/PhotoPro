@@ -18,4 +18,6 @@ interface ServiceGalleryInterface
 
     public function listComments(string $galleryId): array;
 
+    public function addPhotosToGallery(string $galleryId, array $photos, string $photographerId): void;
+
 }

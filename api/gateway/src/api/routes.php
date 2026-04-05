@@ -29,6 +29,7 @@ return function(App $app): App {
         $group->post('/galeries', GatewayGalleryGeneriqueAction::class . ':createGallery');
         $group->patch('/galeries/{id}/publish', GatewayGalleryGeneriqueAction::class . ':publishGallery');
         $group->patch('/galeries/{id}/unpublish', GatewayGalleryGeneriqueAction::class . ':unpublishGallery');
+        $group->post('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':addPhotosToGallery');
         $group->post('/galeries/{id}/photos/{photoId}/comments', GatewayGalleryGeneriqueAction::class . ':addComment');
     })->add(AuthMiddleware::class);
 

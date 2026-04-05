@@ -152,4 +152,26 @@ class ServiceGallery implements ServiceGalleryInterface
             throw new \Exception($e->getMessage(), $e->getCode());
         }
     }
+
+    public function addPhotosToGallery(string $galleryId, array $photos, string $photographerId): void
+    {
+        $gallery = $this->galleryRepository->findById($galleryId);
+
+        if (!$gallery) {
+            throw new \RuntimeException('Galerie introuvable', 404);
+        }
+
+        if ($gallery['photographer_id'] !== $photographerId) {
+            throw new \RuntimeException('Accès interdit', 403);
+        }
+
+        if (empty($photos)) {
+            throw new \InvalidArgumentException('Aucune photo à ajouter');
+        }
+        try {
+            $this->galleryRepository->addPhotosToGallery($galleryId, $photos);
+        } catch(\Exception $e){
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+    }
 }

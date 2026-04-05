@@ -27,4 +27,6 @@ interface GalleryRepositoryInterface
     public function addComment(InputCommentDTO $dto);
 
     public function findCommentsByGalleryId(string $galleryId): array;
+
+    public function addPhotosToGallery(string $galleryId, array $photos): void;
 }
