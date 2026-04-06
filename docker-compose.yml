@@ -42,6 +42,31 @@ services:
       - JWT_SECRET=${JWT_SECRET}
     command: sh -c "COMPOSER_PROCESS_TIMEOUT=1800 composer install --prefer-dist --no-interaction --no-progress && php -S 0.0.0.0:80 -t /var/php/public"
 
+  app-gateway-front:
+    build:
+      context: build
+      dockerfile: 8.5-cli.Dockerfile
+    volumes:
+      - ./api/gateway-front/:/var/php
+    working_dir: /var/php
+    ports:
+      - "6083:80"
+    networks:
+      - photopro.net
+    depends_on:
+      - rabbitmq
+      - seaweed-s3
+      - mailer
+      - app-auth
+      - app-gallery
+      - app-photo
+    environment:
+      - AUTH_API_URL=${AUTH_API_URL}
+      - GALLERY_API_URL=${GALLERY_API_URL}
+      - PHOTO_API_URL=${PHOTO_API_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    command: sh -c "COMPOSER_PROCESS_TIMEOUT=1800 composer install --prefer-dist --no-interaction --no-progress && php -S 0.0.0.0:80 -t /var/php/public"
+
   # ── Auth ──────────────────────────────────────────────────────────────────
   app-auth:
     build:
