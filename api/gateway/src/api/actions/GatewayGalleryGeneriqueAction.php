@@ -23,6 +23,11 @@ class GatewayGalleryGeneriqueAction
         return $this->transfererRequete($request, $response, '/galeries');
     }
 
+    public function getGalleriesByPhotographer(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/photographer/' . $args['photographerId']);
+    }
+
     public function createGallery(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->transfererRequete($request, $response, '/galeries');

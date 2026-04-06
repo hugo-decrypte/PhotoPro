@@ -1,6 +1,7 @@
 <?php
 
 use photopro\api\actions\ListeGalleryAction;
+use photopro\api\actions\ListGalleryByPhotographerAction;
 use photopro\api\actions\CreateGalleryAction;
 use photopro\api\actions\AccessPrivateGalleryAction;
 use photopro\api\actions\PublishGalleryAction;
@@ -14,6 +15,12 @@ use photopro\core\application\ports\api\ServiceGalleryInterface;
 return [
     ListeGalleryAction::class => function ($c) {
         return new ListeGalleryAction(
+            $c->get(ServiceGalleryInterface::class)
+        );
+    },
+
+    ListGalleryByPhotographerAction::class => function ($c) {
+        return new ListGalleryByPhotographerAction(
             $c->get(ServiceGalleryInterface::class)
         );
     },

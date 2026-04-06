@@ -51,6 +51,41 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
         return $galleries;
     }
 
+    public function findByPhotographerId(string $idPhotographer): array{
+        $sql = "
+            SELECT 
+                g.id,
+                g.photographer_id,
+                g.title,
+                g.description,
+                g.status,
+                g.type,
+                g.cover_photo_id
+            FROM gallery g
+            WHERE g.photographer_id = :idPhotographer
+            ORDER BY g.created_at DESC
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['idPhotographer' => $idPhotographer]);
+
+        $galleries = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $galleries[] = new Gallery(
+                id: Uuid::fromString($row['id']),
+                photographerId: Uuid::fromString($row['photographer_id']),
+                title: $row['title'],
+                description: $row['description'] ?? '',
+                status: $row['status'] === 'PUBLISHED',
+                type: $row['type'],
+                coverPhotoId: $row['cover_photo_id']
+                    ? Uuid::fromString($row['cover_photo_id'])
+                    : null,
+            );
+        }
+        return $galleries;
+    }
+
     public function createGallery(array $galleryData, ?array $privateData = null): array
     {
         $this->pdo->beginTransaction();

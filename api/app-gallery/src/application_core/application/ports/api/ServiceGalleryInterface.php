@@ -5,6 +5,7 @@ namespace photopro\core\application\ports\api;
 interface ServiceGalleryInterface
 {
     public function listOfGalery(): array;
+    public function listOfGalleyByPhotographer(string $idPhotographer): array;
 
     public function createGallery(array $data, string $photographerId): array;
 

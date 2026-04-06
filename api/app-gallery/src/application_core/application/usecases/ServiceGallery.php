@@ -33,6 +33,29 @@ class ServiceGallery implements ServiceGalleryInterface
         );
     }
 
+    public function listOfGalleyByPhotographer(string $idPhotographer): array{
+        try {
+            $galleries = $this->galleryRepository->findByPhotographerId($idPhotographer);
+        } catch (EntityNotFoundException $e) {
+            throw new EntityNotFoundException($e);
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        return array_map(
+            fn($gallery) => new GalleryDTO(
+                id: $gallery->id->toString(),
+                photographerId: $gallery->photographerId->toString(),
+                title: $gallery->title,
+                description: $gallery->description,
+                status: $gallery->status,
+                type: $gallery->type,
+                coverPhotoId: $gallery->coverPhotoId?->toString()
+            ),
+            $galleries
+        );
+    }
+
     public function createGallery(array $data, string $photographerId): array
     {
         $title = trim((string)($data['title'] ?? ''));
@@ -77,12 +100,21 @@ class ServiceGallery implements ServiceGalleryInterface
                 'access_code' => strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)),
                 'direct_url' => '/galeries/' . $galleryId . '/privee',
             ];
+
+            $this->mail_sender->send(
+                $clientEmail,
+                'Accès à votre galerie privée',
+                'Votre galerie "' . $title . '" a été créée. Code d\'accès : ' . $privateData['access_code']
+            );
+        } else {
+            $photographerEmail = $this->adaptator->getUserEmail($photographerId);
+            $this->mail_sender->send(
+                $photographerEmail,
+                'Confirmation création de galerie',
+                'La galerie "' . $title . '" a été créée avec succès.'
+            );
         }
-        $this->mail_sender->send(
-            $clientEmail,
-            'Confirmation création de galerie',
-            'La galerie ' . $title . ' a été créée avec succès.'
-        );
+
         return $this->galleryRepository->createGallery($galleryData, $privateData);
     }
 

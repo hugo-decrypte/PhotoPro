@@ -11,6 +11,7 @@ interface GalleryRepositoryInterface
      * @return Gallery[]
      */
     public function findAll(): array;
+    public function findByPhotographerId(string $idPhotographer): array;
 
     public function createGallery(array $galleryData, ?array $privateData = null): array;
 
