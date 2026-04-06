@@ -2,21 +2,25 @@
 declare(strict_types=1);
 
 use photopro\api\actions\ListeGalleryAction;
+use photopro\api\actions\ListGalleryByPhotographerAction;
 use photopro\api\actions\CreateGalleryAction;
 use photopro\api\actions\AccessPrivateGalleryAction;
 use photopro\api\actions\PublishGalleryAction;
 use photopro\api\actions\unpublishGalleryAction;
 use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
+use photopro\api\actions\AddPhotosToGalleryAction;
 use photopro\api\middleware\CreateCommentValidationMiddleware;
 
 return function( \Slim\App $app):\Slim\App {
 
     $app->get('/galeries', ListeGalleryAction::class)->setName('gallery.all');
+    $app->get('/galeries/photographer/{photographerId}', ListGalleryByPhotographerAction::class)->setName('gallery.by.photographer');
     $app->post('/galeries', CreateGalleryAction::class)->setName('gallery.create');
     $app->get('/galeries/{id}/privee', AccessPrivateGalleryAction::class)->setName('gallery.private.access');
     $app->patch('/galeries/{id}/publish', PublishGalleryAction::class)->setName('gallery.publish');
     $app->patch('/galeries/{id}/unpublish', UnpublishGalleryAction::class)->setName('gallery.unpublish');
+    $app->post('/galeries/{id}/photos', AddPhotosToGalleryAction::class)->setName('gallery.photos.add');
     $app->get('/galeries/{id}/comments', ListCommentsAction::class)->setName('gallery.comments.list');
     $app->post('/galeries/{id}/photos/{photoId}/comments', AddCommentAction::class)
         ->add(CreateCommentValidationMiddleware::class)

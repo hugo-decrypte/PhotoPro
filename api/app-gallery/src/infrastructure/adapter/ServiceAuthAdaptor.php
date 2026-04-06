@@ -2,27 +2,29 @@
 
 namespace photopro\infra\adapter;
 
-use photopro\core\application\ports\spi\repositoryInterfaces\ServiceAuthAdaptatorInterface;
 use PDO;
+use photopro\core\application\ports\spi\repositoryInterfaces\ServiceAuthAdaptatorInterface;
 
-class ServiceAuthAdaptor implements ServiceAuthAdaptatorInterface {
-    private PDO $db;
-
-    public function __construct(PDO $db)
-    {
-        $this->db = $db;
-    }
+class ServiceAuthAdaptor implements ServiceAuthAdaptatorInterface
+{
+    public function __construct(private PDO $pdo) {}
 
     public function getUserEmail(string $id): string
     {
-        $stmt = $this->db->prepare("SELECT email FROM photographer WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        $user = $stmt->fetch();
+        $stmt = $this->pdo->prepare("
+            SELECT email
+            FROM photographer
+            WHERE id = :id
+        ");
 
-        if (!$user) {
-            throw new \Exception("Utilisateur non trouvé");
+        $stmt->execute(['id' => $id]);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$result) {
+            throw new \RuntimeException("User with ID {$id} not found in auth service");
         }
 
-        return $user['email'];
+        return $result['email'];
     }
 }
