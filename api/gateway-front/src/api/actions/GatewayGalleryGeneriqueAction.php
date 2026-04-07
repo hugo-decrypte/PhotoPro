@@ -35,7 +35,12 @@ class GatewayGalleryGeneriqueAction
 
     public function getPrivateGallery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/privee');
+        $queryString = $request->getUri()->getQuery();
+        $path = '/galeries/' . $args['id'] . '/privee';
+        if ($queryString) {
+            $path .= '?' . $queryString;
+        }
+        return $this->transfererRequete($request, $response, $path);
     }
 
     public function publishGallery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
