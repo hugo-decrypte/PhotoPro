@@ -1,77 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:photo_gallery/core/extensions/context_extension.dart';
-import 'package:photo_gallery/core/widgets/error_widget.dart' as error_widget;
-import 'package:photo_gallery/core/widgets/loading_widget.dart';
-import 'package:photo_gallery/presentation/providers/private_gallery_provider.dart';
+import 'package:photo_gallery/domain/entities/gallery_entity.dart';
+import 'package:photo_gallery/domain/entities/photo_entity.dart';
 import 'package:photo_gallery/presentation/widgets/photo_grid.dart';
-import 'package:photo_gallery/presentation/widgets/private_gallery_dialog.dart';
 
-class PrivateGalleryPage extends ConsumerStatefulWidget {
+class PrivateGalleryPage extends ConsumerWidget {
   final String galleryId;
+  final GalleryEntity? gallery;
+  final List<PhotoEntity>? photos;
 
   const PrivateGalleryPage({
     Key? key,
     required this.galleryId,
+    this.gallery,
+    this.photos,
   }) : super(key: key);
 
   @override
-  ConsumerState<PrivateGalleryPage> createState() => _PrivateGalleryPageState();
-}
-
-class _PrivateGalleryPageState extends ConsumerState<PrivateGalleryPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showAccessDialog();
-    });
-  }
-
-  void _showAccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => PrivateGalleryAccessDialog(
-        galleryId: widget.galleryId,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final galleryState = ref.watch(privateGalleryProvider);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(galleryState.gallery?.title ?? 'Private Gallery'),
+        title: Text(gallery?.title ?? 'Private Gallery'),
       ),
-      body: _buildBody(context, galleryState),
+      body: (photos != null && photos!.isNotEmpty)
+          ? PhotoGrid(
+              photos: photos!,
+              galleryId: galleryId,
+              isPrivate: gallery?.isPrivate ?? true,
+            )
+          : const Center(
+              child: Text('No photos in this gallery'),
+            ),
     );
-  }
-
-  Widget _buildBody(BuildContext context, PrivateGalleryState state) {
-    if (!state.isAccessGranted) {
-      if (state.error != null) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              error_widget.ErrorWidget(
-                message: state.error!,
-                onRetry: _showAccessDialog,
-              ),
-            ],
-          ),
-        );
-      }
-      return const LoadingWidget();
-    }
-
-    if (state.isLoading && state.photos.isEmpty) {
-      return const LoadingWidget(message: 'Loading photos...');
-    }
-
-    return PhotoGrid(photos: state.photos);
   }
 }

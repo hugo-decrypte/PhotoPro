@@ -31,12 +31,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
 
   PhotoEntity _modelToEntity(PhotoModel model) => PhotoEntity(
         id: model.id,
-        title: model.title,
-        mimeType: model.mimeType,
-        sizeBytes: model.sizeBytes,
-        originalFilename: model.originalFilename,
-        s3Key: model.s3Key,
-        uploadedAt: model.uploadedAt,
-        photographerId: model.photographerId,
+        order: model.order,
+        addedAt: model.addedAt,
       );
 }

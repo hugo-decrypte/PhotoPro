@@ -37,16 +37,18 @@ class GalleryDetailNotifier extends StateNotifier<GalleryDetailState> {
   GalleryDetailNotifier(this.galleryRepository)
       : super(const GalleryDetailState());
 
-  Future<void> loadGalleryDetails(String galleryId) async {
-    state = state.copyWith(isLoading: true, error: null);
+  Future<void> loadGalleryDetails(
+    String galleryId,
+    GalleryEntity gallery,
+  ) async {
+    state = state.copyWith(isLoading: true, error: null, gallery: gallery);
 
     try {
-      final (gallery, photos) =
-          await galleryRepository.getGalleryDetails(galleryId);
+      final photos =
+          await galleryRepository.getGalleryPhotos(galleryId);
 
       state = state.copyWith(
         isLoading: false,
-        gallery: gallery,
         photos: photos,
       );
     } catch (e) {

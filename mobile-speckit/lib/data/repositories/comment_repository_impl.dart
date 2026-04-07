@@ -34,10 +34,18 @@ class CommentRepositoryImpl implements CommentRepository {
   }
 
   CommentEntity _modelToEntity(CommentModel model) => CommentEntity(
-        id: model.id,
+        id: model.id ?? '',
         authorName: model.authorName,
         content: model.content,
-        createdAt: model.createdAt,
-        photoId: model.photoId,
+        createdAt: _parseDateTime(model.createdAt),
+        photoId: model.photoId ?? '',
       );
+
+  DateTime _parseDateTime(String dateTimeString) {
+    try {
+      return DateTime.parse(dateTimeString);
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
 }
