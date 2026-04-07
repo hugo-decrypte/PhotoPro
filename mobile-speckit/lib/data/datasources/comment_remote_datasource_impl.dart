@@ -17,16 +17,27 @@ class CommentRemoteDataSourceImpl implements CommentRemoteDataSource {
     required DateTime createdAt,
   }) async {
     try {
+      final formattedDate = createdAt.toString().split('.')[0];
+
       final response = await dioClient.post(
         '${Config.commentsEndpoint}/$galleryId/photos/$photoId/comments',
         data: {
           'authorName': authorName,
           'content': content,
-          'createdAt': createdAt.toIso8601String(),
+          'createdAt': formattedDate,
         },
       );
 
-      return CommentModel.fromJson(response.data);
+      if (response.data == null) {
+        return CommentModel(
+          authorName: authorName,
+          content: content,
+          createdAt: formattedDate,
+        );
+      }
+
+      final data = response.data is Map ? response.data : response.data['data'];
+      return CommentModel.fromJson(data);
     } catch (e) {
       rethrow;
     }

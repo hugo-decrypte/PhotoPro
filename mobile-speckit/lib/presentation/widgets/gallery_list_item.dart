@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_gallery/domain/entities/gallery_entity.dart';
+import 'package:photo_gallery/domain/entities/photo_entity.dart';
 import 'package:photo_gallery/presentation/providers/cover_image_provider.dart';
-import 'package:photo_gallery/presentation/providers/gallery_photos_provider.dart';
 
 class GalleryListItem extends ConsumerWidget {
   final GalleryEntity gallery;
@@ -40,17 +40,26 @@ class GalleryListItem extends ConsumerWidget {
   }
 
   Widget _buildCoverImage(WidgetRef ref) {
-    // Si coverPhotoId existe, l'utiliser
-    if (gallery.coverPhotoId != null && gallery.coverPhotoId!.isNotEmpty) {
-      return _buildImageContainer(ref, gallery.coverPhotoId!);
-    }
-    
-    // Sinon, charger la première photo de la galerie
+    // Charger les photos de la galerie
     final galleryPhotos = ref.watch(galleryPhotosProvider(gallery.id));
     
     return galleryPhotos.when(
       data: (photos) {
-        if (photos.isEmpty) {
+        PhotoEntity? coverPhoto;
+        
+        // Si coverPhotoId existe, chercher cette photo
+        if (gallery.coverPhotoId != null && gallery.coverPhotoId!.isNotEmpty) {
+          try {
+            coverPhoto = photos.firstWhere((p) => p.id == gallery.coverPhotoId);
+          } catch (_) {
+            coverPhoto = null;
+          }
+        }
+        
+        // Sinon utiliser la première photo
+        coverPhoto ??= photos.isNotEmpty ? photos.first : null;
+        
+        if (coverPhoto == null) {
           return Container(
             width: 56,
             height: 56,
@@ -61,8 +70,8 @@ class GalleryListItem extends ConsumerWidget {
             child: const Icon(Icons.image_not_supported, size: 28),
           );
         }
-        // Utiliser la première photo
-        return _buildImageContainer(ref, photos.first.id);
+        
+        return _buildImageContainer(ref, coverPhoto.id);
       },
       loading: () => Container(
         width: 56,

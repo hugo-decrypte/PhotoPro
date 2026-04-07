@@ -29,6 +29,17 @@ class PhotoRepositoryImpl implements PhotoRepository {
     }
   }
 
+  @override
+  Future<String> getPhotoS3Key(String photoId) async {
+    try {
+      return await remoteDataSource.getPhotoS3Key(photoId);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Failed to fetch photo details: $e');
+    }
+  }
+
   PhotoEntity _modelToEntity(PhotoModel model) => PhotoEntity(
         id: model.id,
         order: model.order,

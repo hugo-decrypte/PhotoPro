@@ -30,7 +30,7 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
   Future<String> getPhotoS3Key(String photoId) async {
     try {
       final response = await dioClient.get('/photos/$photoId');
-      return response.data['data']['s3_key'] as String;
+      return response.data['data']['s3Key'] as String;
     } catch (e) {
       rethrow;
     }

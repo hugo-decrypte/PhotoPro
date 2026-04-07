@@ -77,23 +77,20 @@ class PhotoGridItem extends ConsumerWidget {
           children: [
             imageUrlAsyncValue.when(
               data: (imageUrl) {
-                if (imageUrl != null) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey,
-                      ),
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(),
                     ),
-                  );
-                }
-                return const Icon(Icons.image_not_supported);
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey,
+                    ),
+                  ),
+                );
               },
               loading: () => const Center(
                 child: CircularProgressIndicator(),
@@ -160,22 +157,15 @@ class _PhotoEnlargedDialog extends ConsumerWidget {
             child: Center(
               child: imageUrlAsyncValue.when(
                 data: (imageUrl) {
-                  if (imageUrl != null) {
-                    return CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.image_not_supported,
-                        color: Colors.white,
-                        size: 48,
-                      ),
-                    );
-                  }
-                  return const Icon(
-                    Icons.image_not_supported,
-                    color: Colors.white,
-                    size: 48,
+                  return CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.white,
+                      size: 48,
+                    ),
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
@@ -335,8 +325,27 @@ class _CommentFormDialogState extends ConsumerState<_CommentFormDialog> {
       ).future);
 
       if (mounted) {
+        // Fermer le dialog de commentaire
         Navigator.pop(context);
-        _showSuccessDialog();
+        
+        // Attendre que le dialog soit fermé avant d'afficher la popup de succès
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('✅ Succès'),
+                content: const Text('Votre commentaire a été ajouté avec succès!'),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
+        });
       }
     } catch (e, stackTrace) {
       if (mounted) {
@@ -349,21 +358,5 @@ class _CommentFormDialogState extends ConsumerState<_CommentFormDialog> {
         setState(() => _isSubmitting = false);
       }
     }
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Succès'),
-        content: const Text('Votre commentaire a été ajouté avec succès.'),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 }
