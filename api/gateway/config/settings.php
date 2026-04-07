@@ -9,7 +9,6 @@ use photopro\api\actions\GatewayAuthGeneriqueAction;
 use photopro\api\actions\GatewayGalleryGeneriqueAction;
 use photopro\api\middlewares\AuthMiddleware;
 
-
 return [
 
     // settings

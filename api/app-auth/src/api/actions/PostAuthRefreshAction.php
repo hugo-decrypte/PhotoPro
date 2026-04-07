@@ -1,5 +1,4 @@
 <?php
-
 namespace photopro\api\actions;
 
 use Psr\Http\Message\ResponseInterface;

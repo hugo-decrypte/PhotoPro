@@ -57,20 +57,28 @@ class GatewayGalleryGeneriqueAction
     {
         $method = $request->getMethod();
         $body = $request->getParsedBody();
-
-        // preparation des options de la requete
         $options = [];
 
+        // Transmet le JWT
         $authHeader = $request->getHeaderLine('Authorization');
         if (!empty($authHeader)) {
             $options['headers']['Authorization'] = $authHeader;
         }
 
-        if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
-            if (is_array($body) || is_object($body)) {
-                $options['json'] = $body;
+        // Extrait l'ID photographe injecté par AuthMiddleware et l'envoie en header
+        if (isset($body['profile']['id'])) {
+            $options['headers']['X-Photographer-Id'] = $body['profile']['id'];
+        }
+
+        // Retire 'profile' du body avant de transmettre à app-gallery
+        $cleanBody = $body;
+        unset($cleanBody['profile']);
+
+        if (!empty($cleanBody) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
+            if (is_array($cleanBody) || is_object($cleanBody)) {
+                $options['json'] = $cleanBody;
             } else {
-                $options['body'] = $body;
+                $options['body'] = $cleanBody;
                 $options['headers']['Content-Type'] = $request->getHeaderLine('Content-Type') ?: 'application/json';
             }
         }

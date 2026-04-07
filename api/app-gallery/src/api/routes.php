@@ -9,17 +9,27 @@ use photopro\api\actions\unpublishGalleryAction;
 use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
 use photopro\api\middleware\CreateCommentValidationMiddleware;
+use photopro\api\middleware\CreateGalleryValidationMiddleware;
 
 return function( \Slim\App $app):\Slim\App {
 
     $app->get('/galeries', ListeGalleryAction::class)->setName('gallery.all');
-    $app->post('/galeries', CreateGalleryAction::class)->setName('gallery.create');
+
+    $app->post('/galeries', CreateGalleryAction::class)
+        ->add(CreateGalleryValidationMiddleware::class)
+        ->setName('gallery.create');
+
     $app->get('/galeries/{id}/privee', AccessPrivateGalleryAction::class)->setName('gallery.private.access');
+
     $app->patch('/galeries/{id}/publish', PublishGalleryAction::class)->setName('gallery.publish');
+
     $app->patch('/galeries/{id}/unpublish', UnpublishGalleryAction::class)->setName('gallery.unpublish');
+
+
     $app->get('/galeries/{id}/comments', ListCommentsAction::class)->setName('gallery.comments.list');
     $app->post('/galeries/{id}/photos/{photoId}/comments', AddCommentAction::class)
         ->add(CreateCommentValidationMiddleware::class)
         ->setName('gallery.comments.add');
+
     return $app;
 };
