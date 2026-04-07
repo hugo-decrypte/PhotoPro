@@ -1,9 +1,9 @@
 -- Galleries
 INSERT INTO gallery (id, photographer_id, title, description, layout, status, type, cover_photo_id, created_at, published_at) VALUES
-    ('5578f6b7-8870-4faa-927e-4a92349efc1c',	'66a087dd-177b-4502-9ea8-16ace85170f2',	'Winter',	'Photos du photographe Vincent Munier',	'GRID',	'DRAFT',	'PUBLIC',	NULL,	'2026-04-06 15:20:22+00',	NULL),
-    ('b9c5a351-eb86-4065-b8e1-9743595be455',	'55b6836c-1cc3-44d1-b091-06403ba4ab5c',	'La Mer',	'Collection de photos sublime de la mer',	'GRID',	'DRAFT',	'PUBLIC',	NULL,	'2026-04-06 15:24:13+00',	NULL),
-    ('3ef5d836-fe55-4a03-a9fd-c43acf446a7b',	'31ce50cb-83e8-4f11-bd4a-ba694b1756c7',	'La Forêt des Vosges',	'',	'GRID',	'DRAFT',	'PUBLIC',	NULL,	'2026-04-06 15:25:18+00',	NULL),
-    ('412fb78f-46b7-4461-b3ce-ad18a58b6907',	'271a3a99-7807-4b12-ac65-0dbc0a6990f3',	'Desert',	'',	'GRID',	'DRAFT',	'PRIVATE',	NULL,	'2026-04-06 15:32:24+00',	NULL);
+    ('5578f6b7-8870-4faa-927e-4a92349efc1c',	'66a087dd-177b-4502-9ea8-16ace85170f2',	'Winter',	'Photos du photographe Vincent Munier',	'GRID',	'PUBLISHED',	'PUBLIC',	NULL,	'2026-04-06 15:20:22+00',	NULL),
+    ('b9c5a351-eb86-4065-b8e1-9743595be455',	'55b6836c-1cc3-44d1-b091-06403ba4ab5c',	'La Mer',	'Collection de photos sublime de la mer',	'GRID',	'PUBLISHED',	'PUBLIC',	NULL,	'2026-04-06 15:24:13+00',	NULL),
+    ('3ef5d836-fe55-4a03-a9fd-c43acf446a7b',	'31ce50cb-83e8-4f11-bd4a-ba694b1756c7',	'La Forêt des Vosges',	'',	'GRID',	'PUBLISHED',	'PUBLIC',	NULL,	'2026-04-06 15:25:18+00',	NULL),
+    ('412fb78f-46b7-4461-b3ce-ad18a58b6907',	'271a3a99-7807-4b12-ac65-0dbc0a6990f3',	'Desert',	'',	'GRID',	'PUBLISHED',	'PRIVATE',	NULL,	'2026-04-06 15:32:24+00',	NULL);
 
 -- Accès galerie privée
 INSERT INTO private_gallery_access (gallery_id, client_name, client_email, client_phone, access_code, direct_url) VALUES

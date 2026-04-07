@@ -86,6 +86,12 @@ class GatewayGalleryGeneriqueAction
             $options['headers']['X-Photographer-Id'] = $photographerHeader;
         }
 
+        // Query parameters
+        $queryParams = $request->getQueryParams();
+        if (!empty($queryParams)) {
+            $options['query'] = $queryParams;
+        }
+
         // Gestion du body
         if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
 

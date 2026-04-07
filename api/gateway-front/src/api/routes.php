@@ -28,7 +28,7 @@ return function(App $app): App {
     // Gallery (protégées JWT)
     $app->group('', function ($group) {
         $group->post('/galeries/{id}/photos/{photoId}/comments', GatewayGalleryGeneriqueAction::class . ':addComment');
-    })->add(AuthMiddleware::class);
+    });
 
     // CORS Catch-All
     $app->options('/{routes:.+}', function ($request, $response) {
