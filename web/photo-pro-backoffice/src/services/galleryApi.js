@@ -33,6 +33,15 @@ export async function addPhotosToGallery(galleryId, photos) {
   }
 }
 
+export async function fetchGalleryPhotos(galleryId) {
+  try {
+    const { data } = await http.get(`/galeries/${encodeURIComponent(galleryId)}/photos`)
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
+}
+
 export async function createGallery(payload) {
   try {
     const { data } = await http.post('/galeries', payload)
