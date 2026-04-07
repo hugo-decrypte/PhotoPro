@@ -27,6 +27,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 g.type,
                 g.cover_photo_id
             FROM gallery g
+            WHERE g.type = 'PUBLIC'
             ORDER BY g.created_at DESC
         ";
 
