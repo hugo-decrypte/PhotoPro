@@ -68,9 +68,9 @@ class GatewayGalleryGeneriqueAction
         $method = $request->getMethod();
         $body = $request->getParsedBody();
 
-        // preparation des options de la requete
         $options = [];
 
+        // Headers
         $authHeader = $request->getHeaderLine('Authorization');
         if (!empty($authHeader)) {
             $options['headers']['Authorization'] = $authHeader;
@@ -81,19 +81,18 @@ class GatewayGalleryGeneriqueAction
             $options['headers']['X-Photographer-Id'] = $photographerHeader;
         }
 
+        // Gestion du body
         if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
-            if (is_array($body) || is_object($body)) {
-                $options['json'] = $body;
-        // Extrait l'ID photographe injecté par AuthMiddleware et l'envoie en header
-        if (isset($body['profile']['id'])) {
-            $options['headers']['X-Photographer-Id'] = $body['profile']['id'];
-        }
 
-        // Retire 'profile' du body avant de transmettre à app-gallery
-        $cleanBody = $body;
-        unset($cleanBody['profile']);
+            // Injecter l'ID photographe si présent
+            if (isset($body['profile']['id'])) {
+                $options['headers']['X-Photographer-Id'] = $body['profile']['id'];
+            }
 
-        if (!empty($cleanBody) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
+            // Nettoyer le body
+            $cleanBody = $body;
+            unset($cleanBody['profile']);
+
             if (is_array($cleanBody) || is_object($cleanBody)) {
                 $options['json'] = $cleanBody;
             } else {
@@ -105,6 +104,7 @@ class GatewayGalleryGeneriqueAction
         try {
             $apiResponse = $this->httpClient->request($method, $path, $options);
             $response->getBody()->write($apiResponse->getBody()->getContents());
+
             return $response
                 ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withStatus($apiResponse->getStatusCode());
@@ -112,6 +112,7 @@ class GatewayGalleryGeneriqueAction
         } catch (ClientException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorBody = $e->getResponse()->getBody()->getContents();
+
             $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Gallery']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
 
@@ -121,6 +122,7 @@ class GatewayGalleryGeneriqueAction
 
         } catch (ServerException $e) {
             $errorBody = $e->getResponse()->getBody()->getContents();
+
             $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur interne service Gallery']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
