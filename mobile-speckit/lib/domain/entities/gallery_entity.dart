@@ -1,20 +1,22 @@
 class GalleryEntity {
   final String id;
-  final String name;
+  final String title;
   final String? description;
   final String type;
   final String? coverPhotoId;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   final String photographerId;
+  final bool status;
 
   GalleryEntity({
     required this.id,
-    required this.name,
+    required this.title,
     this.description,
     required this.type,
     this.coverPhotoId,
-    required this.createdAt,
+    this.createdAt,
     required this.photographerId,
+    required this.status,
   });
 
   bool get isPublic => type == 'PUBLIC';

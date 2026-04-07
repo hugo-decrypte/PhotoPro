@@ -20,7 +20,7 @@ class GalleryListItem extends StatelessWidget {
         leading: gallery.coverPhotoId != null
             ? _buildCoverImage()
             : const Icon(Icons.image_not_supported),
-        title: Text(gallery.name),
+        title: Text(gallery.title),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

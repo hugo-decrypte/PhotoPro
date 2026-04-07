@@ -32,7 +32,7 @@ class _GalleryDetailPageState extends ConsumerState<GalleryDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(galleryState.gallery?.name ?? 'Gallery'),
+        title: Text(galleryState.gallery?.title ?? 'Gallery'),
       ),
       body: _buildBody(context, galleryState),
     );

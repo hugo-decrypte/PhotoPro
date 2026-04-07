@@ -44,7 +44,7 @@ class _PrivateGalleryPageState extends ConsumerState<PrivateGalleryPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(galleryState.gallery?.name ?? 'Private Gallery'),
+        title: Text(galleryState.gallery?.title ?? 'Private Gallery'),
       ),
       body: _buildBody(context, galleryState),
     );

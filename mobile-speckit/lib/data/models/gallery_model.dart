@@ -5,25 +5,25 @@ part 'gallery_model.g.dart';
 @JsonSerializable()
 class GalleryModel {
   final String id;
-  final String name;
+  final String title;
   final String? description;
-  @JsonKey(name: 'type')
-  final String galleryType;
-  @JsonKey(name: 'cover_photo_id')
+  final String type;
   final String? coverPhotoId;
-  @JsonKey(name: 'created_at')
-  final DateTime createdAt;
-  @JsonKey(name: 'photographer_id')
+  @JsonKey(includeIfNull: false)
+  final DateTime? createdAt;
+  @JsonKey(name: 'photographerId')
   final String photographerId;
+  final bool status;
 
   GalleryModel({
     required this.id,
-    required this.name,
+    required this.title,
     this.description,
-    required this.galleryType,
+    required this.type,
     this.coverPhotoId,
-    required this.createdAt,
+    this.createdAt,
     required this.photographerId,
+    required this.status,
   });
 
   factory GalleryModel.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +31,6 @@ class GalleryModel {
 
   Map<String, dynamic> toJson() => _$GalleryModelToJson(this);
 
-  bool get isPublic => galleryType == 'PUBLIC';
-  bool get isPrivate => galleryType == 'PRIVATE';
+  bool get isPublic => type == 'PUBLIC';
+  bool get isPrivate => type == 'PRIVATE';
 }

@@ -8,21 +8,27 @@ part of 'gallery_model.dart';
 
 GalleryModel _$GalleryModelFromJson(Map<String, dynamic> json) => GalleryModel(
   id: json['id'] as String,
-  name: json['name'] as String,
+  title: json['title'] as String,
   description: json['description'] as String?,
-  galleryType: json['type'] as String,
-  coverPhotoId: json['cover_photo_id'] as String?,
-  createdAt: DateTime.parse(json['created_at'] as String),
-  photographerId: json['photographer_id'] as String,
+  type: json['type'] as String,
+  coverPhotoId: json['coverPhotoId'] as String?,
+  createdAt:
+      json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
+  photographerId: json['photographerId'] as String,
+  status: json['status'] as bool,
 );
 
 Map<String, dynamic> _$GalleryModelToJson(GalleryModel instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'name': instance.name,
+      'title': instance.title,
       'description': instance.description,
-      'type': instance.galleryType,
-      'cover_photo_id': instance.coverPhotoId,
-      'created_at': instance.createdAt.toIso8601String(),
-      'photographer_id': instance.photographerId,
+      'type': instance.type,
+      'coverPhotoId': instance.coverPhotoId,
+      if (instance.createdAt?.toIso8601String() case final value?)
+        'createdAt': value,
+      'photographerId': instance.photographerId,
+      'status': instance.status,
     };
