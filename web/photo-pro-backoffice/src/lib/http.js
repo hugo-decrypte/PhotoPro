@@ -23,7 +23,13 @@ function requestNeedsXPhotographerId(config) {
   if (method === 'post' && path === 'galeries') {
     return true
   }
+  if (method === 'post' && /^galeries\/[^/]+\/photos$/.test(path)) {
+    return true
+  }
   if (method === 'patch' && /^galeries\/[^/]+\/(publish|unpublish)$/.test(path)) {
+    return true
+  }
+  if (method === 'get' && /^galeries\/photographer\/[^/]+$/.test(path)) {
     return true
   }
   return false

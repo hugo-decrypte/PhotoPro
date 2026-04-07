@@ -1,8 +1,13 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
-import { fetchGalleries, publishGallery, unpublishGallery } from '../services/galleryApi'
+import { fetchGalleriesByPhotographer, publishGallery, unpublishGallery } from '../services/galleryApi'
+import { useAuthStore } from '../stores/auth'
+import { useRouter } from 'vue-router'
 import '../css/gallery-view.css'
+
+const authStore = useAuthStore()
+const router = useRouter()
 
 const galleries = ref([])
 const loading = ref(false)
@@ -25,8 +30,17 @@ function mapGallery(item) {
 async function loadGalleries() {
   loading.value = true
   listError.value = ''
+  authStore.loadFromStorage()
+  const photographerId = authStore.userId
+  if (!photographerId) {
+    listError.value = 'Connecte-toi pour voir tes galeries.'
+    galleries.value = []
+    loading.value = false
+    await router.push({ name: 'login' })
+    return
+  }
   try {
-    const payload = await fetchGalleries()
+    const payload = await fetchGalleriesByPhotographer(photographerId)
     const list = Array.isArray(payload?.data) ? payload.data : []
     galleries.value = list.map(mapGallery).filter((g) => g.id)
   } catch (err) {
@@ -65,7 +79,10 @@ onMounted(() => {
     <AppHeader />
 
     <main class="app-shell__main">
-      <h1 class="app-shell__title">Galeries</h1>
+      <div class="gallery-page-head">
+        <h1 class="app-shell__title">Galeries</h1>
+        <RouterLink class="gallery-page-head__new" :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
+      </div>
       <p v-if="loading" class="gallery-state">Chargement des galeries...</p>
       <p v-else-if="listError" class="gallery-action-error" role="alert">{{ listError }}</p>
       <p v-if="actionError" class="gallery-action-error" role="alert">{{ actionError }}</p>
@@ -89,7 +106,15 @@ onMounted(() => {
               <template v-if="gallery.photosCount !== null"> · {{ gallery.photosCount }} photo(s)</template>
             </p>
             <div class="gallery-card__actions">
-              <RouterLink :to="{ name: 'gallery-new' }">Éditer</RouterLink>
+              <RouterLink
+                :to="{
+                  name: 'gallery-photos',
+                  params: { galleryId: gallery.id },
+                  query: { title: gallery.title },
+                }"
+              >
+                Ajouter des photos
+              </RouterLink>
               <button
                 type="button"
                 :disabled="actionLoadingId === gallery.id"
@@ -113,6 +138,34 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.gallery-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.gallery-page-head .app-shell__title {
+  margin: 0;
+}
+
+.gallery-page-head__new {
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #94a8f9;
+  background: #94a8f9;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.gallery-page-head__new:hover {
+  filter: brightness(1.05);
+}
+
 .gallery-state {
   margin: 0 0 1rem;
   color: #6b6b78;

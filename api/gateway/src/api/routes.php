@@ -26,8 +26,8 @@ return function(App $app): App {
 
     // Gallery (protégées JWT)
     $app->group('', function ($group) {
-        $group->get('/galeries/photographer/{photographerId}', GatewayGalleryGeneriqueAction::class . ':getGalleriesByPhotographer');
         $group->post('/galeries', GatewayGalleryGeneriqueAction::class . ':createGallery');
+        $group->get('/galeries/photographer/{photographerId}', GatewayGalleryGeneriqueAction::class . ':getGalleriesByPhotographer');
         $group->patch('/galeries/{id}/publish', GatewayGalleryGeneriqueAction::class . ':publishGallery');
         $group->patch('/galeries/{id}/unpublish', GatewayGalleryGeneriqueAction::class . ':unpublishGallery');
         $group->post('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':addPhotosToGallery');

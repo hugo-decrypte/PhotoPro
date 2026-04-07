@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
-import { createGallery } from '../services/galleryApi'
+import { addPhotosToGallery, createGallery } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
 
 const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
@@ -53,17 +53,33 @@ async function submit() {
       payload.client_phone = clientPhone.value.trim()
     }
   }
-  if (selectedPhotoIds.value.length) {
-    // Prévu pour rattachement backend dès que l'endpoint est disponible.
-    payload.photo_ids = [...selectedPhotoIds.value]
-  }
-
   loading.value = true
   try {
     const result = await createGallery(payload)
     if (!result?.success) {
       throw new Error(result?.error || 'Création impossible.')
     }
+
+    const created = result?.data
+    const galleryId =
+      created && typeof created === 'object' && created.id != null && created.id !== ''
+        ? String(created.id)
+        : ''
+
+    if (galleryId && selectedPhotoIds.value.length) {
+      const photosPayload = selectedPhotoIds.value.map((id, index) => ({
+        photo_id: String(id),
+        order: index + 1,
+      }))
+      const addResult = await addPhotosToGallery(galleryId, photosPayload)
+      if (!addResult?.success) {
+        throw new Error(
+          addResult?.error ||
+            'Galerie créée, mais l’ajout des photos a échoué. Tu peux les ajouter depuis la liste des galeries.',
+        )
+      }
+    }
+
     successMessage.value = 'Galerie créée avec succès.'
     title.value = ''
     description.value = ''
