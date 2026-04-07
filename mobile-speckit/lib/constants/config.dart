@@ -1,5 +1,5 @@
 class Config {
-  static const String baseUrl = 'http://localhost:6083';
+  static const String baseUrl = 'http://192.168.1.18:6083';
   
   // Endpoints
   static const String galleriesEndpoint = '/galeries';
