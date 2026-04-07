@@ -229,4 +229,15 @@ class ServiceGallery implements ServiceGalleryInterface
             throw new \Exception($e->getMessage(), $e->getCode());
         }
     }
+
+    public function getPhotosByGalleryId(string $galleryId): array
+    {
+        $gallery = $this->galleryRepository->findById($galleryId);
+
+        if (!$gallery) {
+            throw new \RuntimeException('Galerie introuvable', 404);
+        }
+
+        return $this->galleryRepository->findPhotosByGalleryId($galleryId);
+    }
 }

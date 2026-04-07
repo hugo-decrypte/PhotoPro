@@ -311,4 +311,21 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
             throw $e;
         }
     }
+
+    public function findPhotosByGalleryId(string $galleryId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                gp.photo_id,
+                gp.\"order\",
+                gp.added_at
+            FROM gallery_photo gp
+            WHERE gp.gallery_id = :gallery_id
+            ORDER BY gp.\"order\" ASC, gp.added_at DESC
+        ");
+        
+        $stmt->execute(['gallery_id' => $galleryId]);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

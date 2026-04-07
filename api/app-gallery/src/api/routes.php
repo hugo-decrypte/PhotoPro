@@ -9,6 +9,7 @@ use photopro\api\actions\unpublishGalleryAction;
 use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
 use photopro\api\actions\AddPhotosToGalleryAction;
+use photopro\api\actions\GetGalleryPhotosAction;
 use photopro\api\middleware\CreateCommentValidationMiddleware;
 use photopro\api\middleware\CreateGalleryValidationMiddleware;
 
@@ -31,6 +32,8 @@ return function( \Slim\App $app):\Slim\App {
     $app->post('/galeries/{id}/photos/{photoId}/comments', AddCommentAction::class)
         ->add(CreateCommentValidationMiddleware::class)
         ->setName('gallery.comments.add');
+
+    $app->get('/galeries/{id}/photos', GetGalleryPhotosAction::class)->setName('gallery.photos.list');
 
     return $app;
 };

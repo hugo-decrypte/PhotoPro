@@ -20,6 +20,7 @@ return function(App $app): App {
     $app->get('/galeries', GatewayGalleryGeneriqueAction::class . ':getGalleries');
     $app->get('/galeries/{id}/privee', GatewayGalleryGeneriqueAction::class . ':getPrivateGallery');
     $app->get('/galeries/{id}/comments', GatewayGalleryGeneriqueAction::class . ':getComments');
+    $app->get('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':getGalleryPhotos');
 
     $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto');
 

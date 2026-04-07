@@ -63,6 +63,11 @@ class GatewayGalleryGeneriqueAction
         return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos');
     }
 
+    public function getGalleryPhotos(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos');
+    }
+
     public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface
     {
         $method = $request->getMethod();

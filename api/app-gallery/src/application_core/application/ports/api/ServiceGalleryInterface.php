@@ -21,4 +21,6 @@ interface ServiceGalleryInterface
 
     public function addPhotosToGallery(string $galleryId, array $photos, string $photographerId): void;
 
+    public function getPhotosByGalleryId(string $galleryId): array;
+
 }

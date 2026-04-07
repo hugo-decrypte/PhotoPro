@@ -9,6 +9,7 @@ use photopro\api\actions\UnpublishGalleryAction;
 use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
 use photopro\api\actions\AddPhotosToGalleryAction;
+use photopro\api\actions\GetGalleryPhotosAction;
 use photopro\core\application\ports\api\ServiceGalleryInterface;
 
 
@@ -62,6 +63,12 @@ return [
 
     AddPhotosToGalleryAction::class => function ($c) {
         return new AddPhotosToGalleryAction(
+            $c->get(ServiceGalleryInterface::class)
+        );
+    },
+
+    GetGalleryPhotosAction::class => function ($c) {
+        return new GetGalleryPhotosAction(
             $c->get(ServiceGalleryInterface::class)
         );
     },

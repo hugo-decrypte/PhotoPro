@@ -30,4 +30,6 @@ interface GalleryRepositoryInterface
     public function findCommentsByGalleryId(string $galleryId): array;
 
     public function addPhotosToGallery(string $galleryId, array $photos): void;
+
+    public function findPhotosByGalleryId(string $galleryId): array;
 }
