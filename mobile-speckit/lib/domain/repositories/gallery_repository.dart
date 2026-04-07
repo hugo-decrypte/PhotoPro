@@ -7,6 +7,8 @@ abstract class GalleryRepository {
     required int limit,
   });
 
+  Future<List<PhotoEntity>> getGalleryPhotos(String galleryId);
+
   Future<(GalleryEntity, List<PhotoEntity>)> getGalleryDetails(String galleryId);
 
   Future<(GalleryEntity, List<PhotoEntity>)> getPrivateGallery(

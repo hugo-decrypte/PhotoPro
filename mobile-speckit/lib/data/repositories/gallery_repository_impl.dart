@@ -30,13 +30,31 @@ class GalleryRepositoryImpl implements GalleryRepository {
   }
 
   @override
+  Future<List<PhotoEntity>> getGalleryPhotos(String galleryId) async {
+    try {
+      final data = await remoteDataSource.getGalleryDetails(galleryId);
+      
+      final List<dynamic> photosJson = data['data'] ?? [];
+      final photos = photosJson
+          .map((p) => _photoModelToEntity(PhotoModel.fromJson(p)))
+          .toList();
+
+      return photos;
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw NetworkException('Failed to fetch photos: $e');
+    }
+  }
+
+  @override
   Future<(GalleryEntity, List<PhotoEntity>)> getGalleryDetails(String galleryId) async {
     try {
       final data = await remoteDataSource.getGalleryDetails(galleryId);
       final galleryModel = GalleryModel.fromJson(data);
       final gallery = _modelToEntity(galleryModel);
 
-      final List<dynamic> photosJson = data['photos'] ?? [];
+      final List<dynamic> photosJson = data['data'] ?? [];
       final photos = photosJson
           .map((p) => _photoModelToEntity(PhotoModel.fromJson(p)))
           .toList();
@@ -59,7 +77,7 @@ class GalleryRepositoryImpl implements GalleryRepository {
       final galleryModel = GalleryModel.fromJson(data);
       final gallery = _modelToEntity(galleryModel);
 
-      final List<dynamic> photosJson = data['photos'] ?? [];
+      final List<dynamic> photosJson = data['data'] ?? [];
       final photos = photosJson
           .map((p) => _photoModelToEntity(PhotoModel.fromJson(p)))
           .toList();
@@ -92,12 +110,7 @@ class GalleryRepositoryImpl implements GalleryRepository {
 
   PhotoEntity _photoModelToEntity(PhotoModel model) => PhotoEntity(
         id: model.id,
-        title: model.title,
-        mimeType: model.mimeType,
-        sizeBytes: model.sizeBytes,
-        originalFilename: model.originalFilename,
-        s3Key: model.s3Key,
-        uploadedAt: model.uploadedAt,
-        photographerId: model.photographerId,
+        order: model.order,
+        addedAt: model.addedAt,
       );
 }

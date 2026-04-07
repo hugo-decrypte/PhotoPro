@@ -17,14 +17,20 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
     try {
       final response = await dioClient.get(
         '${Config.galleryDetailsEndpoint}/$galleryId/photos',
-        queryParameters: {
-          'offset': offset,
-          'limit': limit,
-        },
       );
 
-      final List<dynamic> data = response.data['photos'] ?? [];
+      final List<dynamic> data = response.data['data'] ?? [];
       return data.map((json) => PhotoModel.fromJson(json)).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> getPhotoS3Key(String photoId) async {
+    try {
+      final response = await dioClient.get('/photos/$photoId');
+      return response.data['data']['s3_key'] as String;
     } catch (e) {
       rethrow;
     }

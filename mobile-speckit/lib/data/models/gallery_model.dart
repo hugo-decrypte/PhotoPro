@@ -8,8 +8,9 @@ class GalleryModel {
   final String title;
   final String? description;
   final String type;
+  @JsonKey(name: 'coverPhotoId')
   final String? coverPhotoId;
-  @JsonKey(includeIfNull: false)
+  @JsonKey(name: 'createdAt', includeIfNull: false)
   final DateTime? createdAt;
   @JsonKey(name: 'photographerId')
   final String photographerId;

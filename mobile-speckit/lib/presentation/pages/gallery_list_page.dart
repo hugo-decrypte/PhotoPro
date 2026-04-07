@@ -5,6 +5,7 @@ import 'package:photo_gallery/core/extensions/context_extension.dart';
 import 'package:photo_gallery/core/widgets/error_widget.dart' as error_widget;
 import 'package:photo_gallery/core/widgets/loading_widget.dart';
 import 'package:photo_gallery/presentation/providers/gallery_list_provider.dart';
+import 'package:photo_gallery/presentation/widgets/access_private_gallery_dialog.dart';
 import 'package:photo_gallery/presentation/widgets/gallery_list_item.dart';
 import 'package:photo_gallery/router/app_router.dart';
 
@@ -49,10 +50,31 @@ class _GalleryListPageState extends ConsumerState<GalleryListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Photo Galleries'),
+        title: const Text('Mes Galeries'),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _showAccessPrivateGalleryDialog();
+                },
+                icon: const Icon(Icons.lock),
+                label: const Text('Galerie Privée'),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _buildBody(context, galleryState),
+    );
+  }
+
+  void _showAccessPrivateGalleryDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const AccessPrivateGalleryDialog(),
     );
   }
 
@@ -68,7 +90,7 @@ class _GalleryListPageState extends ConsumerState<GalleryListPage> {
     }
 
     if (state.galleries.isEmpty && state.isLoading) {
-      return const LoadingWidget(message: 'Loading galleries...');
+      return const LoadingWidget(message: 'Chargement des galeries...');
     }
 
     return ListView.builder(
@@ -88,17 +110,12 @@ class _GalleryListPageState extends ConsumerState<GalleryListPage> {
           child: GalleryListItem(
             gallery: gallery,
             onTap: () {
-              if (gallery.isPublic) {
-                context.pushNamed(
-                  AppRoute.galleryDetail.name,
-                  pathParameters: {'galleryId': gallery.id},
-                );
-              } else {
-                context.pushNamed(
-                  AppRoute.privateGallery.name,
-                  pathParameters: {'galleryId': gallery.id},
-                );
-              }
+              // Les galeries publiques ET privées utilisent la même page
+              context.pushNamed(
+                AppRoute.galleryDetail.name,
+                pathParameters: {'galleryId': gallery.id},
+                extra: gallery,
+              );
             },
           ),
         );

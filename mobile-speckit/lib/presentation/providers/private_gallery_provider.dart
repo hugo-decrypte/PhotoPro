@@ -69,10 +69,17 @@ class PrivateGalleryNotifier extends StateNotifier<PrivateGalleryState> {
 
   String _getErrorMessage(dynamic error) {
     final message = error.toString();
-    if (message.contains('Invalid access code')) {
-      return 'Invalid access code';
-    } else if (message.contains('Gallery not found')) {
-      return 'Gallery not found';
+    
+    if (message.contains('404') || message.contains('not found')) {
+      return 'Galerie non trouvée';
+    } else if (message.contains('Invalid access code')) {
+      return 'Code d\'accès invalide';
+    } else if (message.contains('Unauthorized') || message.contains('401')) {
+      return 'Code d\'accès invalide';
+    } else if (message.contains('Bad Request') || message.contains('400')) {
+      return 'Paramètres invalides';
+    } else if (message.contains('Network') || message.contains('Connection')) {
+      return 'Erreur de connexion';
     }
     return message.replaceFirst('Exception: ', '');
   }

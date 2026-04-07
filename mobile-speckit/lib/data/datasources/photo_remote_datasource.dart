@@ -6,4 +6,6 @@ abstract class PhotoRemoteDataSource {
     required int offset,
     required int limit,
   });
+
+  Future<String> getPhotoS3Key(String photoId);
 }

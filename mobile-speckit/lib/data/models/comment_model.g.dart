@@ -7,18 +7,18 @@ part of 'comment_model.dart';
 // **************************************************************************
 
 CommentModel _$CommentModelFromJson(Map<String, dynamic> json) => CommentModel(
-  id: json['id'] as String,
-  authorName: json['author_name'] as String,
+  id: json['id'] as String?,
+  authorName: json['authorName'] as String,
   content: json['content'] as String,
-  createdAt: DateTime.parse(json['created_at'] as String),
-  photoId: json['photo_id'] as String,
+  createdAt: json['createdAt'] as String,
+  photoId: json['photoId'] as String?,
 );
 
 Map<String, dynamic> _$CommentModelToJson(CommentModel instance) =>
     <String, dynamic>{
-      'id': instance.id,
-      'author_name': instance.authorName,
+      if (instance.id case final value?) 'id': value,
+      'authorName': instance.authorName,
       'content': instance.content,
-      'created_at': instance.createdAt.toIso8601String(),
-      'photo_id': instance.photoId,
+      'createdAt': instance.createdAt,
+      if (instance.photoId case final value?) 'photoId': value,
     };

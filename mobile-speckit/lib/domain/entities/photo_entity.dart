@@ -1,23 +1,17 @@
 class PhotoEntity {
   final String id;
-  final String title;
-  final String mimeType;
-  final int sizeBytes;
-  final String originalFilename;
-  final String s3Key;
-  final DateTime uploadedAt;
-  final String photographerId;
+  final int order;
+  final String? addedAt;
+  String? _cachedImageUrl;
 
   PhotoEntity({
     required this.id,
-    required this.title,
-    required this.mimeType,
-    required this.sizeBytes,
-    required this.originalFilename,
-    required this.s3Key,
-    required this.uploadedAt,
-    required this.photographerId,
+    required this.order,
+    this.addedAt,
   });
+
+  String? get imageUrl => _cachedImageUrl;
+  set imageUrl(String? url) => _cachedImageUrl = url;
 
   @override
   bool operator ==(Object other) =>
