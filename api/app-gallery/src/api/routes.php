@@ -34,6 +34,7 @@ return function( \Slim\App $app):\Slim\App {
         ->setName('gallery.comments.add');
 
     $app->get('/galeries/{id}/photos', GetGalleryPhotosAction::class)->setName('gallery.photos.list');
+    $app->post('/galeries/{id}/photos', AddPhotosToGalleryAction::class)->setName('gallery.photos.add');
 
     return $app;
 };
