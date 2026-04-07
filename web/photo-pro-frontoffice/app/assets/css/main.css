@@ -1,0 +1,13 @@
+:root {
+    --color-primary: #268D86;
+    --color-secondary: #135062;
+    --color-accent: #4FD180;
+    --color-dark: #051630;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    background: #ffffff;
+    color: #051630;
+}
