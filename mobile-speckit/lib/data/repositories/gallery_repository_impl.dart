@@ -81,12 +81,13 @@ class GalleryRepositoryImpl implements GalleryRepository {
 
   GalleryEntity _modelToEntity(GalleryModel model) => GalleryEntity(
         id: model.id,
-        name: model.name,
+        title: model.title,
         description: model.description,
-        type: model.galleryType,
+        type: model.type,
         coverPhotoId: model.coverPhotoId,
         createdAt: model.createdAt,
         photographerId: model.photographerId,
+        status: model.status,
       );
 
   PhotoEntity _photoModelToEntity(PhotoModel model) => PhotoEntity(
