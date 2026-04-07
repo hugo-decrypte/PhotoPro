@@ -194,6 +194,22 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
 
         $gallery = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        if ($gallery) {
+            // Récupérer les photos associées
+            $photosStmt = $this->pdo->prepare("
+                SELECT 
+                    gp.photo_id,
+                    gp.\"order\",
+                    gp.added_at
+                FROM gallery_photo gp
+                WHERE gp.gallery_id = :gallery_id
+                ORDER BY gp.\"order\" ASC, gp.added_at DESC
+            ");
+
+            $photosStmt->execute(['gallery_id' => $galleryId]);
+            $gallery['photos'] = $photosStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
         return $gallery ?: null;
     }
 
