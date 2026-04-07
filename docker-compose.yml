@@ -128,6 +128,7 @@ services:
       dockerfile: 8.5-cli.Dockerfile
     volumes:
       - ./api/app-photo:/var/php
+      - ./seed:/var/seed
     working_dir: /var/php
     ports:
       - "6082:80"
