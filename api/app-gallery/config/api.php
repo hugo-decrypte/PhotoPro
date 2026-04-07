@@ -1,18 +1,26 @@
 <?php
 
 use photopro\api\actions\ListeGalleryAction;
+use photopro\api\actions\ListGalleryByPhotographerAction;
 use photopro\api\actions\CreateGalleryAction;
 use photopro\api\actions\AccessPrivateGalleryAction;
 use photopro\api\actions\PublishGalleryAction;
 use photopro\api\actions\UnpublishGalleryAction;
 use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
+use photopro\api\actions\AddPhotosToGalleryAction;
 use photopro\core\application\ports\api\ServiceGalleryInterface;
 
 
 return [
     ListeGalleryAction::class => function ($c) {
         return new ListeGalleryAction(
+            $c->get(ServiceGalleryInterface::class)
+        );
+    },
+
+    ListGalleryByPhotographerAction::class => function ($c) {
+        return new ListGalleryByPhotographerAction(
             $c->get(ServiceGalleryInterface::class)
         );
     },
@@ -48,6 +56,12 @@ return [
 
     AddCommentAction::class => function ($c) {
         return new AddCommentAction(
+            $c->get(ServiceGalleryInterface::class)
+        );
+    },
+
+    AddPhotosToGalleryAction::class => function ($c) {
+        return new AddPhotosToGalleryAction(
             $c->get(ServiceGalleryInterface::class)
         );
     },

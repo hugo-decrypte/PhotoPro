@@ -60,7 +60,7 @@ return [
     'auth.guzzle.client' => function (ContainerInterface $container) {
         return new Client([
             'base_uri' => $container->get('photopro.auth.api'),
-            'timeout' => 10.0,
+            'timeout' => 30.0,
             'http_errors' => true,
         ]);
     },

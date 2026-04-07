@@ -35,7 +35,37 @@ services:
       - app-auth
       - app-gallery
       - app-photo
-    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
+    environment:
+      - AUTH_API_URL=${AUTH_API_URL}
+      - GALLERY_API_URL=${GALLERY_API_URL}
+      - PHOTO_API_URL=${PHOTO_API_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    command: sh -c "COMPOSER_PROCESS_TIMEOUT=1800 composer install --prefer-dist --no-interaction --no-progress && php -S 0.0.0.0:80 -t /var/php/public"
+
+  app-gateway-front:
+    build:
+      context: build
+      dockerfile: 8.5-cli.Dockerfile
+    volumes:
+      - ./api/gateway-front/:/var/php
+    working_dir: /var/php
+    ports:
+      - "6083:80"
+    networks:
+      - photopro.net
+    depends_on:
+      - rabbitmq
+      - seaweed-s3
+      - mailer
+      - app-auth
+      - app-gallery
+      - app-photo
+    environment:
+      - AUTH_API_URL=${AUTH_API_URL}
+      - GALLERY_API_URL=${GALLERY_API_URL}
+      - PHOTO_API_URL=${PHOTO_API_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    command: sh -c "COMPOSER_PROCESS_TIMEOUT=1800 composer install --prefer-dist --no-interaction --no-progress && php -S 0.0.0.0:80 -t /var/php/public"
 
   # ── Auth ──────────────────────────────────────────────────────────────────
   app-auth:
@@ -54,9 +84,9 @@ services:
   photopro-auth.db:
     image: postgres:16
     environment:
-      POSTGRES_USER: photopro
-      POSTGRES_PASSWORD: photopro
-      POSTGRES_DB: photopro_auth
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
     networks:
       - photopro.net
     volumes:
@@ -81,9 +111,9 @@ services:
   photopro-gallery.db:
     image: postgres:16
     environment:
-      POSTGRES_USER: photopro
-      POSTGRES_PASSWORD: photopro
-      POSTGRES_DB: photopro_gallery
+      POSTGRES_USER: ${GALLERY_DB_USER}
+      POSTGRES_PASSWORD: ${GALLERY_DB_PASSWORD}
+      POSTGRES_DB: ${GALLERY_DB_NAME}
     networks:
       - photopro.net
     volumes:
@@ -111,15 +141,14 @@ services:
   photopro-photo.db:
     image: postgres:16
     environment:
-      POSTGRES_USER: photopro
-      POSTGRES_PASSWORD: photopro
-      POSTGRES_DB: photopro_photo
+      POSTGRES_USER: ${PHOTO_DB_USER}
+      POSTGRES_PASSWORD: ${PHOTO_DB_PASSWORD}
+      POSTGRES_DB: ${PHOTO_DB_NAME}
     networks:
       - photopro.net
     volumes:
-        - photopro_photo_data:/var/lib/postgresql/data
-        - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/01.schema.sql
-        - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/02.data.sql
+      - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
+      - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 
   # ── SeaweedFS ─────────────────────────────────────────────────────────────
   seaweed-master:
@@ -161,8 +190,8 @@ services:
     networks:
       - photopro.net
     environment:
-      - AWS_ACCESS_KEY_ID=PHOTOPRO_ACCESS_KEY
-      - AWS_SECRET_ACCESS_KEY=PHOTOPRO_SECRET_KEY
+      - AWS_ACCESS_KEY_ID=${S3_ACCESS_KEY}
+      - AWS_SECRET_ACCESS_KEY=${S3_SECRET_KEY}
     volumes:
       - ./S3/s3.json:/etc/seaweedfs/s3.json
 

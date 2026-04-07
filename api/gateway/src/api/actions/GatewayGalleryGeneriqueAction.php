@@ -23,6 +23,11 @@ class GatewayGalleryGeneriqueAction
         return $this->transfererRequete($request, $response, '/galeries');
     }
 
+    public function getGalleriesByPhotographer(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/photographer/' . $args['photographerId']);
+    }
+
     public function createGallery(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $this->transfererRequete($request, $response, '/galeries');
@@ -53,18 +58,32 @@ class GatewayGalleryGeneriqueAction
         return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos/' . $args['photoId'] . '/comments');
     }
 
+    public function addPhotosToGallery(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos');
+    }
+
     public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface
     {
         $method = $request->getMethod();
         $body = $request->getParsedBody();
+
+        // preparation des options de la requete
         $options = [];
 
-        // Transmet le JWT
         $authHeader = $request->getHeaderLine('Authorization');
         if (!empty($authHeader)) {
             $options['headers']['Authorization'] = $authHeader;
         }
 
+        $photographerHeader = $request->getHeaderLine('X-Photographer-Id');
+        if (!empty($photographerHeader)) {
+            $options['headers']['X-Photographer-Id'] = $photographerHeader;
+        }
+
+        if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
+            if (is_array($body) || is_object($body)) {
+                $options['json'] = $body;
         // Extrait l'ID photographe injecté par AuthMiddleware et l'envoie en header
         if (isset($body['profile']['id'])) {
             $options['headers']['X-Photographer-Id'] = $body['profile']['id'];

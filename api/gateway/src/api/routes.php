@@ -11,12 +11,7 @@ use photopro\api\middlewares\AuthMiddleware;
 
 return function(App $app): App {
 
-    // CORS preflight
-    $app->options('/{routes:.+}', function ($request, $response) {
-        return $response;
-    });
-
-    // ── (publiques) ──────────────────────────────────────────────────
+    // (publiques)
     $app->post('/register', GatewayAuthGeneriqueAction::class . ':register');
     $app->post('/signin',   GatewayAuthGeneriqueAction::class . ':signin');
     $app->post('/refresh',  GatewayAuthGeneriqueAction::class . ':refresh');
@@ -29,19 +24,26 @@ return function(App $app): App {
     $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto');
 
 
-    // ── Gallery (protégées JWT) ───────────────────────────────────────────
+    // Gallery (protégées JWT)
     $app->group('', function ($group) {
         $group->post('/galeries', GatewayGalleryGeneriqueAction::class . ':createGallery');
+        $group->get('/galeries/photographer/{photographerId}', GatewayGalleryGeneriqueAction::class . ':getGalleriesByPhotographer');
         $group->patch('/galeries/{id}/publish', GatewayGalleryGeneriqueAction::class . ':publishGallery');
         $group->patch('/galeries/{id}/unpublish', GatewayGalleryGeneriqueAction::class . ':unpublishGallery');
+        $group->post('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':addPhotosToGallery');
         $group->post('/galeries/{id}/photos/{photoId}/comments', GatewayGalleryGeneriqueAction::class . ':addComment');
     })->add(AuthMiddleware::class);
 
-    // ── Photo (protégées JWT) ─────────────────────────────────────────────
+    // Photo (protégées JWT)
     $app->group('', function ($group) {
         $group->post('/photos', GatewayPhotoGeneriqueAction::class . ':uploadPhoto');
         $group->delete('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':deletePhoto');
     })->add(AuthMiddleware::class);
+
+    // CORS Catch-All
+    $app->options('/{routes:.+}', function ($request, $response) {
+        return $response;
+    });
 
     return $app;
 };

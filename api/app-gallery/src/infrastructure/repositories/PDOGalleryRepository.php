@@ -51,6 +51,41 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
         return $galleries;
     }
 
+    public function findByPhotographerId(string $idPhotographer): array{
+        $sql = "
+            SELECT 
+                g.id,
+                g.photographer_id,
+                g.title,
+                g.description,
+                g.status,
+                g.type,
+                g.cover_photo_id
+            FROM gallery g
+            WHERE g.photographer_id = :idPhotographer
+            ORDER BY g.created_at DESC
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['idPhotographer' => $idPhotographer]);
+
+        $galleries = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $galleries[] = new Gallery(
+                id: Uuid::fromString($row['id']),
+                photographerId: Uuid::fromString($row['photographer_id']),
+                title: $row['title'],
+                description: $row['description'] ?? '',
+                status: $row['status'] === 'PUBLISHED',
+                type: $row['type'],
+                coverPhotoId: $row['cover_photo_id']
+                    ? Uuid::fromString($row['cover_photo_id'])
+                    : null,
+            );
+        }
+        return $galleries;
+    }
+
     public function createGallery(array $galleryData, ?array $privateData = null): array
     {
         $this->pdo->beginTransaction();
@@ -247,5 +282,32 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
         $stmt->execute(['gallery_id' => $galleryId]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addPhotosToGallery(string $galleryId, array $photos): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO gallery_photo (gallery_id, photo_id, \"order\", added_at)
+                VALUES (:gallery_id, :photo_id, :order, NOW())
+                ON CONFLICT (gallery_id, photo_id) 
+                DO UPDATE SET \"order\" = EXCLUDED.\"order\"
+            ");
+
+            foreach ($photos as $photo) {
+                $stmt->execute([
+                    'gallery_id' => $galleryId,
+                    'photo_id' => $photo['photo_id'],
+                    'order' => $photo['order'] ?? 0,
+                ]);
+            }
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 }

@@ -8,6 +8,7 @@ use photopro\api\actions\PublishGalleryAction;
 use photopro\api\actions\unpublishGalleryAction;
 use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
+use photopro\api\actions\AddPhotosToGalleryAction;
 use photopro\api\middleware\CreateCommentValidationMiddleware;
 use photopro\api\middleware\CreateGalleryValidationMiddleware;
 

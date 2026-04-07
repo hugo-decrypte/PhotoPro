@@ -9,6 +9,9 @@ import { useAuthStore } from '../stores/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 
+const firstName = ref('')
+const lastName = ref('')
+const pseudo = ref('')
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -22,8 +25,8 @@ function extractTokens(data) {
 }
 
 async function submit() {
-  if (!email.value || !password.value) {
-    errorMessage.value = 'Email et mot de passe obligatoires.'
+  if (!firstName.value || !lastName.value || !pseudo.value || !email.value || !password.value) {
+    errorMessage.value = 'Prénom, nom, pseudo, email et mot de passe sont obligatoires.'
     return
   }
 
@@ -32,6 +35,9 @@ async function submit() {
 
   try {
     const data = await register({
+      first_name: firstName.value.trim(),
+      name: lastName.value.trim(),
+      pseudo: pseudo.value.trim(),
       email: email.value,
       password: password.value,
     })
@@ -42,7 +48,12 @@ async function submit() {
 
     authStore.setTokens(tokens.accessToken, tokens.refreshToken)
     if (data?.user) {
-      authStore.setUser(data.user)
+      authStore.setUser({
+        ...data.user,
+        first_name: firstName.value.trim(),
+        name: lastName.value.trim(),
+        pseudo: pseudo.value.trim(),
+      })
     }
     router.push({ name: 'dashboard' })
   } catch (err) {
@@ -56,6 +67,42 @@ async function submit() {
 <template>
   <AuthLayout title="Inscription">
     <form class="auth-form" @submit.prevent="submit">
+      <div class="auth-form__field">
+        <label for="register-first-name">Prénom</label>
+        <input
+          id="register-first-name"
+          v-model="firstName"
+          class="auth-form__input"
+          type="text"
+          name="first_name"
+          autocomplete="given-name"
+          placeholder="Jean"
+        />
+      </div>
+      <div class="auth-form__field">
+        <label for="register-last-name">Nom</label>
+        <input
+          id="register-last-name"
+          v-model="lastName"
+          class="auth-form__input"
+          type="text"
+          name="name"
+          autocomplete="family-name"
+          placeholder="Dupont"
+        />
+      </div>
+      <div class="auth-form__field">
+        <label for="register-pseudo">Pseudo</label>
+        <input
+          id="register-pseudo"
+          v-model="pseudo"
+          class="auth-form__input"
+          type="text"
+          name="pseudo"
+          autocomplete="nickname"
+          placeholder="jeanphoto"
+        />
+      </div>
       <div class="auth-form__field">
         <label for="register-email">Email</label>
         <input

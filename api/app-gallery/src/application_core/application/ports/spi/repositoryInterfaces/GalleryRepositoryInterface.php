@@ -11,6 +11,7 @@ interface GalleryRepositoryInterface
      * @return Gallery[]
      */
     public function findAll(): array;
+    public function findByPhotographerId(string $idPhotographer): array;
 
     public function createGallery(array $galleryData, ?array $privateData = null): array;
 
@@ -27,4 +28,6 @@ interface GalleryRepositoryInterface
     public function addComment(InputCommentDTO $dto);
 
     public function findCommentsByGalleryId(string $galleryId): array;
+
+    public function addPhotosToGallery(string $galleryId, array $photos): void;
 }

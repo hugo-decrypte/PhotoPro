@@ -4,9 +4,11 @@ import { useAuthStore } from '../stores/auth'
 import DashboardView from '../views/DashboardView.vue'
 import GalleryView from '../views/GalleryView.vue'
 import GalleryEditView from '../views/GalleryEditView.vue'
+import GalleryAddPhotosView from '../views/GalleryAddPhotosView.vue'
 import LoginView from '../views/LoginView.vue'
 import PhotosView from '../views/PhotosView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import SettingsView from '../views/SettingsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +44,16 @@ const router = createRouter({
       path: '/gallery/new',
       name: 'gallery-new',
       component: GalleryEditView,
+    },
+    {
+      path: '/gallery/:galleryId/photos',
+      name: 'gallery-photos',
+      component: GalleryAddPhotosView,
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
     },
   ],
 })

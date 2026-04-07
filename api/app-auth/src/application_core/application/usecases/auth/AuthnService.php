@@ -4,6 +4,7 @@ namespace photopro\core\application\usecases\auth;
 
 use photopro\api\dto\auth\AuthDTO;
 use photopro\api\dto\auth\CredentialsDTO;
+use photopro\api\dto\auth\UserDTO;
 use photopro\core\application\ports\spi\exceptions\EntityNotFoundException;
 use photopro\core\application\ports\spi\repositoryInterfaces\AuthRepositoryInterface;
 use photopro\core\domain\entities\user\User;
@@ -55,5 +56,19 @@ class AuthnService implements AuthnServiceInterface
         $user->pseudo = $credentials->getPseudo();
         $this->authRepository->saveUser($user);
         return $uuid;
+    }
+
+    public function getUser(string $id): UserDTO {
+        try {
+            $user = $this->authRepository->getById($id);
+
+            return new UserDTO(
+                id: $user->id,
+                email: $user->email,
+                password: $user->password
+            );
+        } catch (EntityNotFoundException $e) {
+            throw new \RuntimeException("Utilisateur introuvable pour l'email fourni.");
+        }
     }
 }
