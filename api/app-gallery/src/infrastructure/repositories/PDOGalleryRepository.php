@@ -27,6 +27,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 g.type,
                 g.cover_photo_id
             FROM gallery g
+            WHERE g.type = 'PUBLIC'
             ORDER BY g.created_at DESC
         ";
 
@@ -309,5 +310,22 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
             $this->pdo->rollBack();
             throw $e;
         }
+    }
+
+    public function findPhotosByGalleryId(string $galleryId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                gp.photo_id,
+                gp.\"order\",
+                gp.added_at
+            FROM gallery_photo gp
+            WHERE gp.gallery_id = :gallery_id
+            ORDER BY gp.\"order\" ASC, gp.added_at DESC
+        ");
+        
+        $stmt->execute(['gallery_id' => $galleryId]);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

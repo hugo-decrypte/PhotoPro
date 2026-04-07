@@ -63,12 +63,10 @@ class ServiceGallery implements ServiceGalleryInterface
             throw new \InvalidArgumentException('Titre obligatoire');
         }
 
-        $type = strtolower((string) ($data['type'] ?? 'public'));
-        if (!in_array($type, ['public', 'private'], true)) {
+        $type = strtoupper($data['type'] ?? 'PUBLIC');
+        if (!in_array($type, ['PUBLIC', 'PRIVATE'], true)) {
             throw new \InvalidArgumentException('Type invalide');
         }
-
-        $dbType = strtoupper($type);
 
         $galleryId = Uuid::uuid4()->toString();
 
@@ -78,7 +76,7 @@ class ServiceGallery implements ServiceGalleryInterface
             'title' => $title,
             'description' => $data['description'] ?? null,
             'status' => 'DRAFT',
-            'type' => $dbType,
+            'type' => $type,
             'cover_photo_id' => null,
             'created_at' => date('Y-m-d H:i:s'),
             'published_at' => null,
@@ -86,7 +84,7 @@ class ServiceGallery implements ServiceGalleryInterface
 
         $privateData = null;
 
-        if ($type === 'private') {
+        if ($type === 'PRIVATE') {
             $clientEmail = trim((string)($data['client_email'] ?? ''));
             if ($clientEmail === '') {
                 throw new \InvalidArgumentException('Email client obligatoire pour une galerie privée');
@@ -230,5 +228,16 @@ class ServiceGallery implements ServiceGalleryInterface
         } catch(\Exception $e){
             throw new \Exception($e->getMessage(), $e->getCode());
         }
+    }
+
+    public function getPhotosByGalleryId(string $galleryId): array
+    {
+        $gallery = $this->galleryRepository->findById($galleryId);
+
+        if (!$gallery) {
+            throw new \RuntimeException('Galerie introuvable', 404);
+        }
+
+        return $this->galleryRepository->findPhotosByGalleryId($galleryId);
     }
 }

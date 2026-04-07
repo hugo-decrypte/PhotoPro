@@ -63,14 +63,19 @@ class GatewayGalleryGeneriqueAction
         return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos');
     }
 
+    public function getGalleryPhotos(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/galeries/' . $args['id'] . '/photos');
+    }
+
     public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface
     {
         $method = $request->getMethod();
         $body = $request->getParsedBody();
 
-        // preparation des options de la requete
         $options = [];
 
+        // Headers
         $authHeader = $request->getHeaderLine('Authorization');
         if (!empty($authHeader)) {
             $options['headers']['Authorization'] = $authHeader;
@@ -81,11 +86,22 @@ class GatewayGalleryGeneriqueAction
             $options['headers']['X-Photographer-Id'] = $photographerHeader;
         }
 
+        // Gestion du body
         if (!empty($body) && in_array($method, ['POST', 'PUT', 'PATCH'])) {
-            if (is_array($body) || is_object($body)) {
-                $options['json'] = $body;
+
+            // Injecter l'ID photographe si présent
+            if (isset($body['profile']['id'])) {
+                $options['headers']['X-Photographer-Id'] = $body['profile']['id'];
+            }
+
+            // Nettoyer le body
+            $cleanBody = $body;
+            unset($cleanBody['profile']);
+
+            if (is_array($cleanBody) || is_object($cleanBody)) {
+                $options['json'] = $cleanBody;
             } else {
-                $options['body'] = $body;
+                $options['body'] = $cleanBody;
                 $options['headers']['Content-Type'] = $request->getHeaderLine('Content-Type') ?: 'application/json';
             }
         }
@@ -93,6 +109,7 @@ class GatewayGalleryGeneriqueAction
         try {
             $apiResponse = $this->httpClient->request($method, $path, $options);
             $response->getBody()->write($apiResponse->getBody()->getContents());
+
             return $response
                 ->withHeader('Content-Type', 'application/json; charset=utf-8')
                 ->withStatus($apiResponse->getStatusCode());
@@ -100,6 +117,7 @@ class GatewayGalleryGeneriqueAction
         } catch (ClientException $e) {
             $statusCode = $e->getResponse()->getStatusCode();
             $errorBody = $e->getResponse()->getBody()->getContents();
+
             $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur service Gallery']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
 
@@ -109,6 +127,7 @@ class GatewayGalleryGeneriqueAction
 
         } catch (ServerException $e) {
             $errorBody = $e->getResponse()->getBody()->getContents();
+
             $response->getBody()->write($errorBody ?: json_encode(['message' => 'Erreur interne service Gallery']));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }

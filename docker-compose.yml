@@ -17,6 +17,34 @@ services:
     depends_on:
       - app-gateway-gestion
 
+  web.frontoffice:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./web/photo-pro-frontoffice:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run build && node .output/server/index.mjs"
+    ports:
+      - "3000:3000"
+    networks:
+      - photopro.net
+    depends_on:
+      - photopro-gallery.db
+      - app-auth
+      - seaweed-s3
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - DB_HOST=photopro-gallery.db
+      - DB_PORT=5432
+      - DB_USER=${GALLERY_DB_USER}
+      - DB_PASSWORD=${GALLERY_DB_PASSWORD}
+      - DB_NAME=${GALLERY_DB_NAME}
+      - AUTH_API_URL=${AUTH_API_URL}
+      - GALLERY_API_URL=${GALLERY_API_URL}
+      - S3_ENDPOINT=http://seaweed-s3:8333
+      - NUXT_PUBLIC_S3_ENDPOINT=http://localhost:8333
+
   app-gateway-gestion:
     build:
       context: build
@@ -128,6 +156,7 @@ services:
       dockerfile: 8.5-cli.Dockerfile
     volumes:
       - ./api/app-photo:/var/php
+      - ./seed:/var/seed
     working_dir: /var/php
     ports:
       - "6082:80"

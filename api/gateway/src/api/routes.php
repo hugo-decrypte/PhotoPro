@@ -20,14 +20,15 @@ return function(App $app): App {
     $app->get('/galeries', GatewayGalleryGeneriqueAction::class . ':getGalleries');
     $app->get('/galeries/{id}/privee', GatewayGalleryGeneriqueAction::class . ':getPrivateGallery');
     $app->get('/galeries/{id}/comments', GatewayGalleryGeneriqueAction::class . ':getComments');
+    $app->get('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':getGalleryPhotos');
 
     $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto');
 
 
     // Gallery (protégées JWT)
     $app->group('', function ($group) {
-        $group->get('/galeries/photographer/{photographerId}', GatewayGalleryGeneriqueAction::class . ':getGalleriesByPhotographer');
         $group->post('/galeries', GatewayGalleryGeneriqueAction::class . ':createGallery');
+        $group->get('/galeries/photographer/{photographerId}', GatewayGalleryGeneriqueAction::class . ':getGalleriesByPhotographer');
         $group->patch('/galeries/{id}/publish', GatewayGalleryGeneriqueAction::class . ':publishGallery');
         $group->patch('/galeries/{id}/unpublish', GatewayGalleryGeneriqueAction::class . ':unpublishGallery');
         $group->post('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':addPhotosToGallery');

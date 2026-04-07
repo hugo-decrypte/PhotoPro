@@ -10,6 +10,29 @@ export async function fetchGalleries() {
   }
 }
 
+/** Galeries du photographe connecté (JWT + X-Photographer-Id doivent correspondre à photographerId). */
+export async function fetchGalleriesByPhotographer(photographerId) {
+  try {
+    const { data } = await http.get(`/galeries/photographer/${encodeURIComponent(photographerId)}`)
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
+}
+
+/**
+ * @param {string} galleryId
+ * @param {{ photo_id: string, order?: number }[]} photos
+ */
+export async function addPhotosToGallery(galleryId, photos) {
+  try {
+    const { data } = await http.post(`/galeries/${encodeURIComponent(galleryId)}/photos`, { photos })
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
+}
+
 export async function createGallery(payload) {
   try {
     const { data } = await http.post('/galeries', payload)

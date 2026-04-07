@@ -1,5 +1,6 @@
 <?php
 
+use photopro\api\middleware\CreateGalleryValidationMiddleware;
 use photopro\core\application\ports\spi\repositoryInterfaces\GalleryRepositoryInterface;
 use photopro\infra\repositories\PDOGalleryRepository;
 use Psr\Container\ContainerInterface;
@@ -33,5 +34,9 @@ return [
 
     GalleryRepositoryInterface::class => function (ContainerInterface $c) {
         return new PDOGalleryRepository($c->get('db.photopro_gallery'));
+    },
+
+    CreateGalleryValidationMiddleware::class => function () {
+        return new CreateGalleryValidationMiddleware();
     },
 ];
