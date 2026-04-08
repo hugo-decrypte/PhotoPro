@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import PhotoSlideshow from '../components/PhotoSlideshow.vue'
 import { fetchGalleryPhotos } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
+import { photoAltText, photoFullSrc, photoThumbSrc } from '../composables/usePhotoDisplay'
 
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
 
@@ -32,14 +32,12 @@ const resolvedPhotos = computed(() => {
       if (!id) {
         return null
       }
-      const pot = map.get(id)
-      const url = String(pot?.url || pot?.thumbnailUrl || '')
-      const thumbnailUrl = String(pot?.thumbnailUrl || pot?.url || url)
+      const pot = map.get(id) || {}
       return {
         id,
-        title: String(pot?.title || pot?.originalName || 'Photo'),
-        url: url || thumbnailUrl,
-        thumbnailUrl: thumbnailUrl || url,
+        title: photoAltText(pot),
+        url: photoFullSrc(pot),
+        thumbnailUrl: photoThumbSrc(pot),
       }
     })
     .filter(Boolean)
@@ -105,7 +103,6 @@ watch(galleryId, () => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Aperçu & diaporama</h1>
       <p class="preview__subtitle">{{ galleryTitle }}</p>
@@ -126,7 +123,13 @@ watch(galleryId, () => {
           <ul class="preview__grid">
             <li v-for="(photo, i) in resolvedPhotos" :key="photo.id" class="preview__cell">
               <button type="button" class="preview__thumb" @click="openSlideshow(i)">
-                <img v-if="photo.thumbnailUrl" :src="photo.thumbnailUrl" :alt="photo.title" />
+                <img
+                  v-if="photoThumbSrc(photo)"
+                  :src="photoThumbSrc(photo)"
+                  :alt="photo.title"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <span v-else class="preview__thumb-fallback">{{ photo.title }}</span>
               </button>
             </li>

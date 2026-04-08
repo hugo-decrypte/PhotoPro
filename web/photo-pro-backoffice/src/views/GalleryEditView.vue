@@ -1,16 +1,18 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import { addPhotosToGallery, createGallery } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
 import { filterItems } from '../lib/listClient'
+import { usePhotoDisplay } from '../composables/usePhotoDisplay'
 
 const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
 
 const router = useRouter()
+
+const { thumbSrc } = usePhotoDisplay()
 
 /** 1 = infos galerie, 2 = choix des photos (optionnel) */
 const step = ref(1)
@@ -215,7 +217,6 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Créer une galerie</h1>
       <p class="gallery-edit-step-label">
@@ -281,7 +282,7 @@ onMounted(() => {
                 :title="p.title || p.originalName || 'Photo'"
                 @click="toggleCoverPhoto(p.id)"
               >
-                <img :src="p.thumbnailUrl || p.url" alt="" />
+                <img :src="thumbSrc(p)" alt="" loading="lazy" decoding="async" />
               </button>
             </div>
           </div>

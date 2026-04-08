@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import '../css/list-controls.css'
 import { filterItems, pageCount, slicePage } from '../lib/listClient'
@@ -336,7 +335,6 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Photos</h1>
       <div

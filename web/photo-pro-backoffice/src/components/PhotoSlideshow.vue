@@ -1,5 +1,8 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { usePhotoDisplay } from '../composables/usePhotoDisplay'
+
+const { fullSrc, altText } = usePhotoDisplay()
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -88,7 +91,7 @@ function onKeydown(e) {
       <button type="button" class="slideshow__backdrop" aria-label="Fermer" @click="close" />
       <div class="slideshow__panel">
         <header class="slideshow__top">
-          <p v-if="current?.title" class="slideshow__title">{{ current.title }}</p>
+          <p v-if="current" class="slideshow__title">{{ current.title || altText(current) }}</p>
           <p class="slideshow__counter">{{ positionLabel }}</p>
           <button type="button" class="slideshow__close" aria-label="Fermer" @click="close">×</button>
         </header>
@@ -106,10 +109,12 @@ function onKeydown(e) {
 
           <div class="slideshow__frame">
             <img
-              v-if="current?.url"
+              v-if="current && fullSrc(current)"
               class="slideshow__img"
-              :src="current.url"
-              :alt="current.title || 'Photo'"
+              :src="fullSrc(current)"
+              :alt="altText(current)"
+              loading="eager"
+              decoding="async"
             />
             <div v-else class="slideshow__placeholder">
               <p>Image indisponible</p>
