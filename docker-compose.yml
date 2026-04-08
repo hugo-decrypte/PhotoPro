@@ -32,20 +32,29 @@ services:
       - photopro.net
     depends_on:
       - photopro-gallery.db
+      - photopro-photo.db
       - app-auth
       - seaweed-s3
     environment:
       - HOST=0.0.0.0
       - PORT=3000
-      - DB_HOST=photopro-gallery.db
-      - DB_PORT=5432
-      - DB_USER=${GALLERY_DB_USER}
-      - DB_PASSWORD=${GALLERY_DB_PASSWORD}
-      - DB_NAME=${GALLERY_DB_NAME}
-      - AUTH_API_URL=${AUTH_API_URL}
-      - GALLERY_API_URL=${GALLERY_API_URL}
-      - S3_ENDPOINT=http://seaweed-s3:8333
-      - NUXT_PUBLIC_S3_ENDPOINT=http://localhost:8333
+
+      # ✅ DB Gallery
+      - NUXT_DB_HOST=photopro-gallery.db
+      - NUXT_DB_PORT=5432
+      - NUXT_DB_USER=${GALLERY_DB_USER}
+      - NUXT_DB_PASSWORD=${GALLERY_DB_PASSWORD}
+      - NUXT_DB_NAME=${GALLERY_DB_NAME}
+
+      # ✅ DB Photo
+      - NUXT_PHOTO_DB_HOST=photopro-photo.db
+      - NUXT_PHOTO_DB_PORT=5432
+      - NUXT_PHOTO_DB_USER=${PHOTO_DB_USER}
+      - NUXT_PHOTO_DB_PASSWORD=${PHOTO_DB_PASSWORD}
+      - NUXT_PHOTO_DB_NAME=${PHOTO_DB_NAME}
+
+      # ✅ S3 (fix)
+      - NUXT_PUBLIC_S3_ENDPOINT=http://seaweed-s3:8333
 
   app-gateway-gestion:
     build:
@@ -129,6 +138,8 @@ services:
     build:
       context: build
       dockerfile: 8.5-cli.Dockerfile
+    ports:
+      - "6081:80"
     volumes:
       - ./api/app-gallery/:/var/php
     working_dir: /var/php
@@ -178,6 +189,7 @@ services:
     networks:
       - photopro.net
     volumes:
+      - photopro_photo_data:/var/lib/postgresql/data   # ✅ AJOUT
       - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
       - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 

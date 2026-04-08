@@ -205,7 +205,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 WHERE gp.gallery_id = :gallery_id
                 ORDER BY gp.\"order\" ASC, gp.added_at DESC
             ");
-            
+
             $photosStmt->execute(['gallery_id' => $galleryId]);
             $gallery['photos'] = $photosStmt->fetchAll(PDO::FETCH_ASSOC);
         }

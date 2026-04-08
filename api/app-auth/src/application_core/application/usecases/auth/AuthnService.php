@@ -71,4 +71,27 @@ class AuthnService implements AuthnServiceInterface
             throw new \RuntimeException("Utilisateur introuvable pour l'email fourni.");
         }
     }
+
+    public function changePassword(string $userId, string $currentPassword, string $newPassword): void
+    {
+        if (strlen($newPassword) < 8) {
+            throw new \InvalidArgumentException('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+        }
+        if ($currentPassword === $newPassword) {
+            throw new \InvalidArgumentException('Le nouveau mot de passe doit être différent de l’actuel.');
+        }
+
+        try {
+            $user = $this->authRepository->getById($userId);
+        } catch (EntityNotFoundException $e) {
+            throw new \RuntimeException('Utilisateur introuvable.');
+        }
+
+        if (!password_verify($currentPassword, $user->password)) {
+            throw new \RuntimeException('Mot de passe actuel incorrect.');
+        }
+
+        $newHash = password_hash($newPassword, PASSWORD_DEFAULT, ['cost' => 12]);
+        $this->authRepository->updatePasswordHash($userId, $newHash);
+    }
 }

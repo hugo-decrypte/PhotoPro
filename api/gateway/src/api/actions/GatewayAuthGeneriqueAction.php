@@ -35,6 +35,11 @@ class GatewayAuthGeneriqueAction
         return $this->transfererRequete($request, $response, '/tokens/validate');
     }
 
+    public function changePassword(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        return $this->transfererRequete($request, $response, '/password');
+    }
+
     public function transfererRequete(ServerRequestInterface $request, ResponseInterface $response, string $path): ResponseInterface{
         $method = $request->getMethod();
         $body = $request->getParsedBody();

@@ -3,8 +3,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
-import { addPhotosToGallery } from '../services/galleryApi'
+import { addPhotosToGallery, fetchGalleryPhotos } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
+import { REQUIRE_AUTH } from '../config/auth'
 import { useAuthStore } from '../stores/auth'
 
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
@@ -23,6 +24,7 @@ const photos = ref([])
 const selectedIds = ref([])
 const loading = ref(false)
 const errorMessage = ref('')
+const existingPhotoIds = ref([])
 
 function loadPersistedPhotos() {
   try {
@@ -65,6 +67,26 @@ function clearSelection() {
   selectedIds.value = []
 }
 
+async function loadExistingGalleryPhotos() {
+  if (!galleryId.value) {
+    existingPhotoIds.value = []
+    return
+  }
+  try {
+    const result = await fetchGalleryPhotos(galleryId.value)
+    const list = Array.isArray(result?.data) ? result.data : []
+    existingPhotoIds.value = list
+      .map((item) => {
+        if (item?.photo_id != null && item.photo_id !== '') return String(item.photo_id)
+        if (item?.id != null && item.id !== '') return String(item.id)
+        return ''
+      })
+      .filter(Boolean)
+  } catch {
+    existingPhotoIds.value = []
+  }
+}
+
 async function submitAddPhotos() {
   errorMessage.value = ''
 
@@ -80,8 +102,10 @@ async function submitAddPhotos() {
 
   authStore.loadFromStorage()
   if (!authStore.userId) {
-    errorMessage.value = 'Session expirée. Reconnecte-toi.'
-    await router.push({ name: 'login' })
+    errorMessage.value = 'Connecte-toi pour ajouter des photos à la galerie.'
+    if (REQUIRE_AUTH) {
+      await router.push({ name: 'login' })
+    }
     return
   }
 
@@ -108,6 +132,7 @@ async function submitAddPhotos() {
 onMounted(() => {
   authStore.loadFromStorage()
   loadPersistedPhotos()
+  loadExistingGalleryPhotos()
 })
 </script>
 
@@ -129,6 +154,9 @@ onMounted(() => {
           <p v-if="selectedIds.length" class="gallery-add-photos__selection">
             {{ selectedIds.length }} photo(s) sélectionnée(s).
             <button type="button" class="gallery-add-photos__btn" @click="clearSelection">Tout désélectionner</button>
+          </p>
+          <p v-if="existingPhotoIds.length" class="gallery-add-photos__selection">
+            Cette galerie contient déjà {{ existingPhotoIds.length }} photo(s).
           </p>
 
           <PhotoGrid :photos="photos" :selected-ids="selectedIds" @toggle="toggleSelection" />

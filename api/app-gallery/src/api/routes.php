@@ -10,12 +10,16 @@ use photopro\api\actions\ListCommentsAction;
 use photopro\api\actions\AddCommentAction;
 use photopro\api\actions\AddPhotosToGalleryAction;
 use photopro\api\actions\GetGalleryPhotosAction;
+use photopro\api\actions\ListGalleryByPhotographerAction;
 use photopro\api\middleware\CreateCommentValidationMiddleware;
 use photopro\api\middleware\CreateGalleryValidationMiddleware;
 
 return function( \Slim\App $app):\Slim\App {
 
     $app->get('/galeries', ListeGalleryAction::class)->setName('gallery.all');
+    
+    $app->get('/galeries/photographer/{photographerId}', ListGalleryByPhotographerAction::class)
+        ->setName('gallery.by.photographer');
 
     $app->post('/galeries', CreateGalleryAction::class)
         ->add(CreateGalleryValidationMiddleware::class)
@@ -34,6 +38,7 @@ return function( \Slim\App $app):\Slim\App {
         ->setName('gallery.comments.add');
 
     $app->get('/galeries/{id}/photos', GetGalleryPhotosAction::class)->setName('gallery.photos.list');
+    $app->post('/galeries/{id}/photos', AddPhotosToGalleryAction::class)->setName('gallery.photos.add');
 
     return $app;
 };
