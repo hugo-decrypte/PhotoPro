@@ -3,10 +3,14 @@ import pg from 'pg'
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
     const config = useRuntimeConfig()
+    const query = getQuery(event)
+    const code = query.code
+
+    console.log(`[API] Entry - Gallery: ${id}, Code: ${code}`)
 
     const galleryClient = new pg.Client({
         host: config.dbHost,
-        port: Number(config.dbPort),
+        port: Number(config.dbPort) || 5432,
         user: config.dbUser,
         password: config.dbPassword,
         database: config.dbName,
@@ -14,7 +18,7 @@ export default defineEventHandler(async (event) => {
 
     const photoClient = new pg.Client({
         host: config.photoDbHost,
-        port: Number(config.photoDbPort),
+        port: Number(config.photoDbPort) || 5432,
         user: config.photoDbUser,
         password: config.photoDbPassword,
         database: config.photoDbName,
@@ -22,75 +26,68 @@ export default defineEventHandler(async (event) => {
 
     try {
         await galleryClient.connect()
+        console.log(`[API] Connected to Gallery DB`)
 
-        // 🔹 GALERIE
-        const galleryResult = await galleryClient.query(`
-      SELECT id, title, description, type, status, cover_photo_id, published_at
-      FROM gallery
-      WHERE id = $1 AND status = 'PUBLISHED'
-    `, [id])
+        const gRes = await galleryClient.query(
+            'SELECT id, title, description, type, status FROM gallery WHERE id = $1 AND status = $2',
+            [id, 'PUBLISHED']
+        )
 
-        if (galleryResult.rows.length === 0) {
+        if (gRes.rows.length === 0) {
             throw createError({ statusCode: 404, message: 'Galerie introuvable' })
         }
 
-        const gallery = galleryResult.rows[0]
+        const gallery = gRes.rows[0]
 
         if (gallery.type === 'PRIVATE') {
-            return { gallery, photos: null, private: true }
+            if (!code) {
+                return { gallery, photos: null, private: true }
+            }
+
+            const check = await galleryClient.query(
+                'SELECT 1 FROM private_gallery_access WHERE gallery_id = $1 AND access_code = $2',
+                [id, code]
+            )
+
+            if (check.rows.length === 0) {
+                throw createError({ statusCode: 403, message: 'Code incorrect' })
+            }
         }
 
-        // 🔹 PHOTOS (liaison)
-        const gpResult = await galleryClient.query(`
-      SELECT photo_id, "order"
-      FROM gallery_photo
-      WHERE gallery_id = $1
-      ORDER BY "order" ASC
-    `, [id])
+        const gpRes = await galleryClient.query(
+            'SELECT photo_id, "order" FROM gallery_photo WHERE gallery_id = $1 ORDER BY "order"',
+            [id]
+        )
 
-        if (gpResult.rows.length === 0) {
-            return { gallery, photos: [], private: false }
+        let photos = []
+        if (gpRes.rows.length > 0) {
+            const ids = gpRes.rows.map(r => r.photo_id)
+
+            await photoClient.connect()
+            console.log(`[API] Connected to Photo DB`)
+
+            const pRes = await photoClient.query(
+                'SELECT id, s3_key, title FROM photo WHERE id = ANY($1)',
+                [ids]
+            )
+
+            const pMap = new Map(pRes.rows.map(p => [p.id, p]))
+            photos = gpRes.rows.map(gp => {
+                const p = pMap.get(gp.photo_id)
+                return p ? { ...p, order: gp.order, src: `${config.public.s3Endpoint}/photopro-photos/${p.s3_key}` } : null
+            }).filter(Boolean)
         }
-
-        const photoIds = gpResult.rows.map(r => r.photo_id)
-
-        // 🔹 DB PHOTO
-        await photoClient.connect()
-
-        const photosResult = await photoClient.query(`
-      SELECT id, title, s3_key, mime_type
-      FROM photo
-      WHERE id = ANY($1)
-    `, [photoIds])
-
-        const photoMap = new Map(photosResult.rows.map(p => [p.id, p]))
-
-        // 🔥 SAFE MERGE
-        const photos = gpResult.rows
-            .map(gp => {
-                const photo = photoMap.get(gp.photo_id)
-
-                if (!photo) return null // évite crash
-
-                return {
-                    ...photo,
-                    order: gp.order,
-                    url: `${config.public.s3Endpoint}/photopro-photos/${photo.s3_key}`
-                }
-            })
-            .filter(Boolean)
 
         return { gallery, photos, private: false }
 
-    } catch (err) {
-        console.error('API ERROR:', err)
-
+    } catch (e: any) {
+        console.error('[API FATAL ERROR]', e.message)
         throw createError({
-            statusCode: 500,
-            message: 'Erreur serveur galerie'
+            statusCode: e.statusCode || 500,
+            message: e.message || 'Erreur serveur'
         })
     } finally {
-        await galleryClient.end().catch(() => {})
-        await photoClient.end().catch(() => {})
+        await galleryClient.end().catch(() => { })
+        await photoClient.end().catch(() => { })
     }
 })
