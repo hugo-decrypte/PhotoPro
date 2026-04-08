@@ -139,7 +139,7 @@ services:
       context: build
       dockerfile: 8.5-cli.Dockerfile
     ports:
-      - "6081:80"
+      - "56065:80"
     volumes:
       - ./api/app-gallery/:/var/php
     working_dir: /var/php
