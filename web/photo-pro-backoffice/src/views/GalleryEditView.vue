@@ -1,10 +1,11 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import { addPhotosToGallery, createGallery } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
+import { filterItems } from '../lib/listClient'
 
 const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
@@ -22,6 +23,7 @@ const clientName = ref('')
 const clientPhone = ref('')
 /** UUID d’une photo du pot commun (localStorage), optionnel */
 const coverPhotoId = ref('')
+const coverSearchQuery = ref('')
 
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -30,6 +32,24 @@ const selectedPhotoIds = ref([])
 const allPhotos = ref([])
 
 const isPrivate = computed(() => visibility.value === 'private')
+
+const coverPickerPhotos = computed(() =>
+  filterItems(allPhotos.value, coverSearchQuery.value, (p) => `${p.title || ''} ${p.originalName || ''}`),
+)
+
+const coverSelectionHiddenBySearch = computed(() => {
+  const q = String(coverSearchQuery.value || '').trim()
+  if (!q || !coverPhotoId.value) {
+    return false
+  }
+  return !coverPickerPhotos.value.some((p) => String(p.id) === coverPhotoId.value)
+})
+
+watch(allPhotos, () => {
+  if (!allPhotos.value.length) {
+    coverSearchQuery.value = ''
+  }
+})
 
 function loadPersistedPhotos() {
   try {
@@ -159,6 +179,7 @@ async function submitGallery({ withPhotos }) {
     clientName.value = ''
     clientPhone.value = ''
     coverPhotoId.value = ''
+    coverSearchQuery.value = ''
     selectedPhotoIds.value = []
     step.value = 1
     sessionStorage.removeItem(GALLERY_PREFILL_STORAGE_KEY)
@@ -225,9 +246,34 @@ onMounted(() => {
           <div v-if="allPhotos.length" class="gallery-edit-cover">
             <span class="gallery-edit-cover__label">Photo d’entête (optionnel)</span>
             <p class="gallery-edit-form__hint">Choisis une image parmi tes photos importées (page Photos).</p>
-            <div class="gallery-edit-cover__grid" role="group" aria-label="Choisir la photo d’entête">
+            <label class="gallery-edit-cover__search-label" for="cover-photo-search">Rechercher une photo</label>
+            <input
+              id="cover-photo-search"
+              v-model="coverSearchQuery"
+              class="gallery-edit-cover__search"
+              type="search"
+              placeholder="Titre ou nom de fichier…"
+              autocomplete="off"
+            />
+            <p v-if="coverSelectionHiddenBySearch" class="gallery-edit-form__hint gallery-edit-cover__search-note">
+              La photo d’entête sélectionnée ne correspond pas au filtre — efface la recherche pour la voir ou la
+              changer.
+            </p>
+            <p
+              v-if="coverSearchQuery.trim() && !coverPickerPhotos.length"
+              class="gallery-edit-form__hint"
+              role="status"
+            >
+              Aucun résultat pour « {{ coverSearchQuery.trim() }} ».
+            </p>
+            <div
+              v-else
+              class="gallery-edit-cover__grid"
+              role="group"
+              aria-label="Choisir la photo d’entête"
+            >
               <button
-                v-for="p in allPhotos"
+                v-for="p in coverPickerPhotos"
                 :key="p.id"
                 type="button"
                 class="gallery-edit-cover__thumb"
@@ -393,6 +439,7 @@ onMounted(() => {
 
 .gallery-edit-form input[type='text'],
 .gallery-edit-form input[type='email'],
+.gallery-edit-form input[type='search'],
 .gallery-edit-form select,
 .gallery-edit-form textarea {
   width: 100%;
@@ -414,6 +461,23 @@ onMounted(() => {
   font-size: 0.875rem;
   font-weight: 500;
   color: #3a3a45;
+}
+
+.gallery-edit-cover__search-label {
+  display: block;
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #3a3a45;
+}
+
+.gallery-edit-cover__search {
+  width: 100%;
+  margin-bottom: 0.35rem;
+}
+
+.gallery-edit-cover__search-note {
+  margin: 0 0 0.5rem;
 }
 
 .gallery-edit-cover__grid {
