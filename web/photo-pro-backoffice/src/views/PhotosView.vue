@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import '../css/list-controls.css'
 import { filterItems, pageCount, slicePage } from '../lib/listClient'
+import { REQUIRE_AUTH } from '../config/auth'
+import { normalizeApiError } from '../lib/apiError'
+import { addPhotosToGallery, fetchGalleriesByPhotographer } from '../services/galleryApi'
 import { deletePhoto, uploadPhoto } from '../services/photoApi'
 import { useAuthStore } from '../stores/auth'
 
@@ -21,6 +24,12 @@ const uploadLoading = ref(false)
 const deleteLoading = ref(false)
 const uploadError = ref('')
 const uploadSuccess = ref('')
+
+const galleriesForPicker = ref([])
+const galleriesLoading = ref(false)
+const galleriesLoadError = ref('')
+const selectedGalleryId = ref('')
+const addToGalleryLoading = ref(false)
 
 const photos = ref([])
 
@@ -110,6 +119,7 @@ function toggleSelection(id) {
 
 function clearSelection() {
   selectedIds.value = []
+  selectedGalleryId.value = ''
 }
 
 function createGalleryFromSelection() {
@@ -136,6 +146,76 @@ function createGalleryFromSelection() {
   )
 
   router.push({ name: 'gallery-new' })
+}
+
+async function loadGalleriesForPicker() {
+  authStore.loadFromStorage()
+  const pid = authStore.userId
+  if (!pid) {
+    galleriesForPicker.value = []
+    return
+  }
+  galleriesLoading.value = true
+  galleriesLoadError.value = ''
+  try {
+    const payload = await fetchGalleriesByPhotographer(pid)
+    const list = Array.isArray(payload?.data) ? payload.data : []
+    galleriesForPicker.value = list
+      .filter((g) => g?.id != null && g.id !== '')
+      .map((g) => ({
+        id: String(g.id),
+        title: String(g.title || 'Sans titre'),
+      }))
+  } catch (err) {
+    galleriesLoadError.value = normalizeApiError(err).message || err?.message || 'Chargement des galeries impossible.'
+    galleriesForPicker.value = []
+  } finally {
+    galleriesLoading.value = false
+  }
+}
+
+async function addSelectionToExistingGallery() {
+  if (!selectedIds.value.length) {
+    return
+  }
+  if (!selectedGalleryId.value) {
+    uploadError.value = 'Choisis une galerie dans la liste.'
+    uploadSuccess.value = ''
+    return
+  }
+
+  authStore.loadFromStorage()
+  if (!authStore.userId) {
+    uploadError.value = 'Connecte-toi pour ajouter des photos à une galerie.'
+    uploadSuccess.value = ''
+    if (REQUIRE_AUTH) {
+      await router.push({ name: 'login' })
+    }
+    return
+  }
+
+  addToGalleryLoading.value = true
+  uploadError.value = ''
+  uploadSuccess.value = ''
+
+  const photosPayload = selectedIds.value.map((id, index) => ({
+    photo_id: String(id),
+    order: index + 1,
+  }))
+
+  try {
+    const result = await addPhotosToGallery(selectedGalleryId.value, photosPayload)
+    if (!result?.success) {
+      throw new Error(result?.error || 'Ajout impossible.')
+    }
+    selectedIds.value = []
+    selectedGalleryId.value = ''
+    uploadSuccess.value = 'Photos ajoutées à la galerie.'
+  } catch (err) {
+    uploadError.value = normalizeApiError(err).message || err?.message || 'Ajout impossible.'
+  } finally {
+    addToGalleryLoading.value = false
+  }
 }
 
 async function deleteSelectedPhotos() {
@@ -280,6 +360,7 @@ async function uploadImageFiles(files) {
 
     if (uploadedCount > 0) {
       uploadSuccess.value = `${uploadedCount} photo(s) uploadée(s) avec succès.`
+      loadGalleriesForPicker()
     } else if (firstUploadIssue) {
       uploadError.value = firstUploadIssue
     } else {
@@ -330,6 +411,7 @@ async function onDropzoneDrop(event) {
 
 onMounted(() => {
   loadPersistedPhotos()
+  loadGalleriesForPicker()
 })
 </script>
 
@@ -369,21 +451,58 @@ onMounted(() => {
       </div>
       <p v-if="uploadError" class="photos-toolbar__msg photos-toolbar__msg--error" role="alert">{{ uploadError }}</p>
       <p v-if="uploadSuccess" class="photos-toolbar__msg photos-toolbar__msg--success">{{ uploadSuccess }}</p>
-      <p v-if="selectedIds.length">
-        {{ selectedIds.length }} photo(s) sélectionnée(s).
-        <button type="button" class="photos-toolbar__btn" @click="clearSelection">Tout désélectionner</button>
-        <button type="button" class="photos-toolbar__btn photos-toolbar__btn--primary" @click="createGalleryFromSelection">
-          Créer une galerie avec la sélection
-        </button>
-        <button
-          type="button"
-          class="photos-toolbar__btn photos-toolbar__btn--danger"
-          :disabled="deleteLoading || uploadLoading"
-          @click="deleteSelectedPhotos"
+      <div v-if="selectedIds.length" class="photos-toolbar-selection">
+        <p class="photos-toolbar-selection__summary">{{ selectedIds.length }} photo(s) sélectionnée(s).</p>
+        <div class="photos-toolbar-selection__actions">
+          <button type="button" class="photos-toolbar__btn" @click="clearSelection">Tout désélectionner</button>
+          <button
+            type="button"
+            class="photos-toolbar__btn photos-toolbar__btn--primary"
+            @click="createGalleryFromSelection"
+          >
+            Créer une galerie avec la sélection
+          </button>
+          <button
+            type="button"
+            class="photos-toolbar__btn photos-toolbar__btn--danger"
+            :disabled="deleteLoading || uploadLoading || addToGalleryLoading"
+            @click="deleteSelectedPhotos"
+          >
+            {{ deleteLoading ? 'Suppression…' : 'Supprimer la sélection' }}
+          </button>
+        </div>
+        <div class="photos-toolbar-selection__existing">
+          <span class="photos-toolbar-selection__existing-label">Ou ajouter à une galerie existante :</span>
+          <select
+            v-model="selectedGalleryId"
+            class="photos-toolbar-selection__select"
+            :disabled="galleriesLoading || addToGalleryLoading || uploadLoading"
+          >
+            <option value="">{{ galleriesLoading ? 'Chargement des galeries…' : '— Choisir une galerie —' }}</option>
+            <option v-for="g in galleriesForPicker" :key="g.id" :value="g.id">{{ g.title }}</option>
+          </select>
+          <button
+            type="button"
+            class="photos-toolbar__btn photos-toolbar__btn--primary"
+            :disabled="!selectedGalleryId || addToGalleryLoading || uploadLoading || deleteLoading"
+            @click="addSelectionToExistingGallery"
+          >
+            {{ addToGalleryLoading ? 'Ajout…' : 'Ajouter à la galerie' }}
+          </button>
+        </div>
+        <p v-if="galleriesLoadError" class="photos-toolbar__msg photos-toolbar__msg--error" role="alert">
+          {{ galleriesLoadError }}
+        </p>
+        <p
+          v-else-if="!galleriesLoading && !galleriesForPicker.length && authStore.isAuthenticated"
+          class="photos-toolbar-selection__hint"
         >
-          {{ deleteLoading ? 'Suppression…' : 'Supprimer la sélection' }}
-        </button>
-      </p>
+          Tu n’as pas encore de galerie. Crée-en une depuis Galeries, puis reviens ici.
+        </p>
+        <p v-else-if="!authStore.isAuthenticated" class="photos-toolbar-selection__hint">
+          Connecte-toi pour lister tes galeries et y ajouter des photos.
+        </p>
+      </div>
       <p v-else class="photos-toolbar__hint">Aucune sélection</p>
       <p v-if="photos.length === 0" class="photos-toolbar__hint">
         Aucune photo pour le moment. Ajoutez vos photos pour commencer.
@@ -518,5 +637,62 @@ onMounted(() => {
 
 .photos-toolbar__msg--success {
   color: #2e7d32;
+}
+
+.photos-toolbar-selection {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e8e8ef;
+}
+
+.photos-toolbar-selection__summary {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #3a3a45;
+}
+
+.photos-toolbar-selection__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.photos-toolbar-selection__existing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.photos-toolbar-selection__existing-label {
+  font-size: 0.85rem;
+  color: #6b6b78;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .photos-toolbar-selection__existing-label {
+    width: auto;
+  }
+}
+
+.photos-toolbar-selection__select {
+  min-width: min(100%, 220px);
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #d8d8e4;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.85rem;
+  background: #fff;
+  color: #1e1e28;
+}
+
+.photos-toolbar-selection__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #6b6b78;
 }
 </style>
