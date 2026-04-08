@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
+import { REQUIRE_AUTH } from '../config/auth'
 import { fetchGalleriesByPhotographer, publishGallery, unpublishGallery } from '../services/galleryApi'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
@@ -36,7 +37,9 @@ async function loadGalleries() {
     listError.value = 'Connecte-toi pour voir tes galeries.'
     galleries.value = []
     loading.value = false
-    await router.push({ name: 'login' })
+    if (REQUIRE_AUTH) {
+      await router.push({ name: 'login' })
+    }
     return
   }
   try {
