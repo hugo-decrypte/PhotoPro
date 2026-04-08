@@ -6,3 +6,9 @@ INSERT INTO photographer (id, first_name, name, email, password_hash, pseudo, cr
     ('93b51de2-ac03-4a00-b1f2-55aa97b7566d',	'alexandre',	'cazottes',	'cazottes.alexandre@mail.com',	'$2y$12$.2BKzq8Ib3.5p0wYzjC33.NFCmeP3AZNRCDs3rLyAAArGrUSKxFxq',	'cazottes.alexandre',	'2026-04-06 14:52:32.654005+00'),
     ('eeb73e0c-1700-4e5d-a426-de6a81dc2f07',	'arman',	'hayrapetyan',	'hayrapetyan.arman@mail.com',	'$2y$12$p8wwpPT6iQJIrQhCT52y/.QSNNHzIHb/C/CNdqlVWygnNcN7t7/oK',	'hayrapetyan.arman',	'2026-04-06 14:53:42.445169+00'),
     ('6076f4ae-222d-4803-93dd-2073d7be3116',	'wiem',	'hmem',	'hmem.wiem@mail.com',	'$2y$12$WkNJkbeuRUL67k4v/Xitsu8ZFpzpDSns6n3o7YsAIzvja28U90iBe',	'hmem.wiem',	'2026-04-06 14:54:26.179995+00');
+    ('c33883f3-ceea-4410-b205-3e5df613cc24',	'bob',	'bob',	'bob.bob@mail.com',	'$2y$12$MU.Y7CUbAouYZHr7Axybtu3gSgYhzNJ0JEm/QrS2f/7jql.PawROK',	'bob',	'2026-04-06 14:54:26.179995+00'),
+    ('0a1698eb-b947-40f9-b372-ff34f439fc29',	'alice',	'alice',	'alice.alice@mail.com',	'$2y$12$DX0GcshdVokHu0kB95wJpekmYGXQUQ6s.GCQ0KUHKTNPoFlP4Eiwe',	'alice',	'2026-04-06 14:54:26.179995+00'),
+    ('921e5712-69a0-4905-9fcd-78ebe158f889',	'thomas',	'thomas',	'thomas.thomas@mail.com',	'$2y$12$oYZzyRU/iHWuW6PyWruR1e/e8ucN6yaIjEi7b/f1IxKloOsorzJHa',	'thomas',	'2026-04-06 14:54:26.179995+00'),
+    ('50560519-b419-443f-bd70-c62f32cb853c',	'antoine',	'antoine',	'antoine.antoine@mail.com',	'$2y$12$ghG3BoHU.tkGIbap7Wj3dOcuNiIZDzsf6GOECyc2/elrK6PxVeuXm',	'antoine',	'2026-04-06 14:54:26.179995+00'),
+    ('a32c18d7-57db-48c8-b10a-3b1b30a18357',	'marie',	'marie',	'marie.marie@mail.com',	'$2y$12$XxL2xVcnns256ZYzbO4vw.e5lLmumDPcJoHHFNNH9fZNzhHeYiBjC',	'marie',	'2026-04-06 14:54:26.179995+00'),
+    ('f424a23f-0b6a-49fc-8cb6-9f61f2915410',	'ophelia',	'ophelia',	'ophelia.ophelia@mail.com',	'$2y$12$EWdo8/LpXhhcRun0ht5OYeawXWfI3t.XS7CJBo/OZ46Q9JC/tmtcK',	'ophelia',	'2026-04-06 14:54:26.179995+00');
