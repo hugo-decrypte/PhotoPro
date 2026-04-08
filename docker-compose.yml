@@ -2,8 +2,6 @@ networks:
   photopro.net:
     driver: bridge
 
-# port à prendre 56060 - 56077
-
 services:
   web.photopro:
     image: node:22-alpine
@@ -13,7 +11,7 @@ services:
       - /app/node_modules
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
-      - "56060:5173"
+      - "5173:5173"
     networks:
       - photopro.net
     depends_on:
@@ -27,7 +25,7 @@ services:
       - /app/node_modules
     command: sh -c "npm install && npm run build && node .output/server/index.mjs"
     ports:
-      - "56061:3000"
+      - "3000:3000"
     networks:
       - photopro.net
     depends_on:
@@ -64,7 +62,7 @@ services:
       - ./api/gateway/:/var/php
     working_dir: /var/php
     ports:
-      - "56062:80"
+      - "6080:80"
     networks:
       - photopro.net
     depends_on:
@@ -89,7 +87,7 @@ services:
       - ./api/gateway-front/:/var/php
     working_dir: /var/php
     ports:
-      - "56063:80"
+      - "6083:80"
     networks:
       - photopro.net
     depends_on:
@@ -139,7 +137,7 @@ services:
       context: build
       dockerfile: 8.5-cli.Dockerfile
     ports:
-      - "56065:80"
+      - "6081:80"
     volumes:
       - ./api/app-gallery/:/var/php
     working_dir: /var/php
@@ -172,7 +170,7 @@ services:
       - ./seed:/var/seed
     working_dir: /var/php
     ports:
-      - "56066:80"
+      - "6082:80"
     networks:
       - photopro.net
     depends_on:
@@ -198,7 +196,7 @@ services:
     image: chrislusf/seaweedfs:latest
     command: "master -ip=seaweed-master -ip.bind=0.0.0.0"
     ports:
-      - "56068:9333"
+      - "9333:9333"
     networks:
       - photopro.net
 
@@ -206,7 +204,7 @@ services:
     image: chrislusf/seaweedfs:latest
     command: 'volume -ip=seaweed-volume -master="seaweed-master:9333" -ip.bind=0.0.0.0 -port=8082'
     ports:
-      - "56069:8082"
+      - "8082:8082"
     depends_on:
       - seaweed-master
     networks:
@@ -216,7 +214,7 @@ services:
     image: chrislusf/seaweedfs:latest
     command: 'filer -ip=seaweed-filer -master="seaweed-master:9333" -ip.bind=0.0.0.0'
     ports:
-      - "56070:8888"
+      - "8888:8888"
     depends_on:
       - seaweed-master
       - seaweed-volume
@@ -227,7 +225,7 @@ services:
     image: chrislusf/seaweedfs:latest
     command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0 -config=/etc/seaweedfs/s3.json'
     ports:
-      - "56071:8333"
+      - "8333:8333"
     depends_on:
       - seaweed-filer
     networks:
@@ -242,7 +240,7 @@ services:
   adminer:
     image: adminer:latest
     ports:
-      - "56072:8081"
+      - "8081:8081"
     networks:
       - photopro.net
     depends_on:
@@ -255,8 +253,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "56073:5672"
-      - "56074:15672"
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - photopro.net
 
@@ -264,8 +262,8 @@ services:
   mailer:
     image: axllent/mailpit:latest
     ports:
-      - "56075:8025"
-      - "56076:1025"
+      - "8025:8025"
+      - "1025:1025"
     networks:
       - photopro.net
 
