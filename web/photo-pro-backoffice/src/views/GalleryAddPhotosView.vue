@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import { addPhotosToGallery, fetchGalleryPhotos } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
+import { REQUIRE_AUTH } from '../config/auth'
 import { useAuthStore } from '../stores/auth'
 
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
@@ -101,8 +102,10 @@ async function submitAddPhotos() {
 
   authStore.loadFromStorage()
   if (!authStore.userId) {
-    errorMessage.value = 'Session expirée. Reconnecte-toi.'
-    await router.push({ name: 'login' })
+    errorMessage.value = 'Connecte-toi pour ajouter des photos à la galerie.'
+    if (REQUIRE_AUTH) {
+      await router.push({ name: 'login' })
+    }
     return
   }
 

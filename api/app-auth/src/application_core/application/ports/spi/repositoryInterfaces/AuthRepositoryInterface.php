@@ -12,4 +12,6 @@ interface AuthRepositoryInterface
     public function saveUser(User $user): void;
     public function deleteUser(User $user): void;
 
+    public function updatePasswordHash(string $userId, string $passwordHash): void;
+
 }

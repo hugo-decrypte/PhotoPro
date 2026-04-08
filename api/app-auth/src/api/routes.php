@@ -7,6 +7,7 @@ use photopro\api\actions\PostAuthNewUserAction;
 use photopro\api\actions\PostAuthRefreshAction;
 use photopro\api\actions\ValidateTokenAction;
 use photopro\api\actions\GetUserAction;
+use photopro\api\actions\PatchPasswordAction;
 
 return function(App $app): App {
     $app->get('/users/{id}', GetUserAction::class )
@@ -24,6 +25,10 @@ return function(App $app): App {
 
     $app->post('/tokens/validate', ValidateTokenAction::class)
         ->setName('validate_token');
+
+    $app->patch('/password[/]', PatchPasswordAction::class)
+        ->setName('auth_password_patch');
+
     /**
      * CORS : options pour les requêtes preflight
      */

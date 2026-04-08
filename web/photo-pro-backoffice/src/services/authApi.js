@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_BASE_URL, API_TIMEOUT_MS } from '../config/api'
+import http from '../lib/http'
 import { normalizeApiError } from '../lib/apiError'
 
 const authHttp = axios.create({
@@ -19,6 +20,18 @@ export async function register(payload) {
 export async function login(payload) {
   try {
     const { data } = await authHttp.post('/signin', payload)
+    return data
+  } catch (error) {
+    throw normalizeApiError(error)
+  }
+}
+
+export async function changePassword({ currentPassword, newPassword }) {
+  try {
+    const { data } = await http.patch('/password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    })
     return data
   } catch (error) {
     throw normalizeApiError(error)

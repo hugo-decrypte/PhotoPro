@@ -1,8 +1,12 @@
 <template>
   <v-container class="py-8">
     <div class="d-flex align-center justify-space-between mb-6">
-      <h1 style="font-size: 22px; font-weight: 500; color: #051630;">Galeries publiques</h1>
-      <span style="font-size: 13px; color: #999;">{{ galleries.length }} galeries</span>
+      <h1 style="font-size: 22px; font-weight: 500; color: #051630;">
+        Galeries publiques
+      </h1>
+      <span style="font-size: 13px; color: #999;">
+        {{ galleries.length }} galeries
+      </span>
     </div>
 
     <div class="masonry-grid">
@@ -23,6 +27,7 @@
             <v-icon size="40" color="primary">mdi-image-outline</v-icon>
           </div>
         </div>
+
         <div class="card-overlay">
           <div class="card-title">{{ gallery.title }}</div>
           <div class="card-meta">{{ gallery.photo_count }} photos</div>
@@ -30,9 +35,11 @@
       </NuxtLink>
     </div>
 
-    <div v-if="galleries.length === 0" class="text-center py-16">
+    <div v-if="!pending && galleries.length === 0" class="text-center py-16">
       <v-icon size="64" color="grey-lighten-2">mdi-image-off-outline</v-icon>
-      <p style="color: #999; margin-top: 1rem;">Aucune galerie publiée pour le moment</p>
+      <p style="color: #999; margin-top: 1rem;">
+        Aucune galerie publiée pour le moment
+      </p>
     </div>
   </v-container>
 </template>
@@ -41,7 +48,7 @@
 const config = useRuntimeConfig()
 const s3Endpoint = config.public.s3Endpoint
 
-const { data } = await useAsyncData('galleries', () =>
+const { data, pending, error } = await useAsyncData('galleries', () =>
     $fetch('/api/galleries')
 )
 
