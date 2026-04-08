@@ -163,8 +163,10 @@
 const route = useRoute()
 
 const { data, pending } = await useAsyncData(
-    `gallery-${route.params.id}`,
-    () => $fetch(`/api/galleries/${route.params.id}`)
+    `gallery-${route.params.id}-${route.query.code}`,
+    () => $fetch(`/api/galleries/${route.params.id}`, {
+      params: { code: route.query.code }
+    })
 )
 
 watchEffect(() => {
