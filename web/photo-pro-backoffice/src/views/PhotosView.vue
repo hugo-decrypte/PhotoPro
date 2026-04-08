@@ -1,10 +1,14 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
+import '../css/list-controls.css'
+import { filterItems, pageCount, slicePage } from '../lib/listClient'
 import { deletePhoto, uploadPhoto } from '../services/photoApi'
 import { useAuthStore } from '../stores/auth'
+
+const PHOTOS_PAGE_SIZE = 12
 
 const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
 const GALLERY_PREFILL_STORAGE_KEY = 'photopro_gallery_prefill'
@@ -19,6 +23,43 @@ const uploadError = ref('')
 const uploadSuccess = ref('')
 
 const photos = ref([])
+
+const photoSearch = ref('')
+const photoPage = ref(1)
+
+const filteredPhotos = computed(() =>
+  filterItems(photos.value, photoSearch.value, (p) => `${p.title || ''} ${p.originalName || ''}`),
+)
+
+const photoPageCount = computed(() => pageCount(filteredPhotos.value.length, PHOTOS_PAGE_SIZE))
+
+const visiblePhotos = computed(() => slicePage(filteredPhotos.value, photoPage.value, PHOTOS_PAGE_SIZE))
+
+const photoDisplayPage = computed(() => Math.min(Math.max(1, photoPage.value), photoPageCount.value))
+
+const isPhotosFilteredEmpty = computed(() => photos.value.length > 0 && filteredPhotos.value.length === 0)
+
+watch(photoSearch, () => {
+  photoPage.value = 1
+})
+
+watch(
+  () => filteredPhotos.value.length,
+  () => {
+    const pc = pageCount(filteredPhotos.value.length, PHOTOS_PAGE_SIZE)
+    if (photoPage.value > pc) {
+      photoPage.value = pc
+    }
+  },
+)
+
+function photoPrev() {
+  photoPage.value = Math.max(1, photoPage.value - 1)
+}
+
+function photoNext() {
+  photoPage.value = Math.min(photoPageCount.value, photoPage.value + 1)
+}
 
 function serializePhotos(list) {
   return list.map((p) => ({
@@ -278,7 +319,32 @@ onMounted(() => {
       <p v-if="photos.length === 0" class="photos-toolbar__hint">
         Aucune photo pour le moment. Ajoutez vos photos pour commencer.
       </p>
-      <PhotoGrid v-else :photos="photos" :selected-ids="selectedIds" @toggle="toggleSelection" />
+      <template v-else>
+        <div class="list-controls">
+          <label class="list-controls__search">
+            <span class="list-controls__search-label">Rechercher</span>
+            <input v-model="photoSearch" type="search" placeholder="Titre ou nom de fichier…" autocomplete="off" />
+          </label>
+          <div class="list-controls__bar">
+            <p class="list-controls__meta">
+              {{ filteredPhotos.length }} photo(s) · page {{ photoDisplayPage }} / {{ photoPageCount }}
+            </p>
+            <div class="list-controls__pager">
+              <button type="button" :disabled="photoDisplayPage <= 1" @click="photoPrev">Précédent</button>
+              <button type="button" :disabled="photoDisplayPage >= photoPageCount" @click="photoNext">
+                Suivant
+              </button>
+            </div>
+          </div>
+        </div>
+        <p v-if="isPhotosFilteredEmpty" class="list-filter-empty">Aucun résultat pour cette recherche.</p>
+        <PhotoGrid
+          v-else
+          :photos="visiblePhotos"
+          :selected-ids="selectedIds"
+          @toggle="toggleSelection"
+        />
+      </template>
     </main>
   </div>
 </template>

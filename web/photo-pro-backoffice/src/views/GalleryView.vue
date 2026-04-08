@@ -1,11 +1,15 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
 import { REQUIRE_AUTH } from '../config/auth'
+import '../css/list-controls.css'
+import { filterItems, pageCount, slicePage } from '../lib/listClient'
 import { fetchGalleriesByPhotographer, publishGallery, unpublishGallery } from '../services/galleryApi'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 import '../css/gallery-view.css'
+
+const PAGE_SIZE = 6
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -16,7 +20,50 @@ const listError = ref('')
 const actionError = ref('')
 const actionLoadingId = ref('')
 
+const searchQuery = ref('')
+const page = ref(1)
+
+const filteredGalleries = computed(() =>
+  filterItems(galleries.value, searchQuery.value, (g) =>
+    `${g.title} ${g.visibility === 'private' ? 'privé privée' : 'public publique'}`,
+  ),
+)
+
+const galleryPageCount = computed(() => pageCount(filteredGalleries.value.length, PAGE_SIZE))
+
+const visibleGalleries = computed(() => slicePage(filteredGalleries.value, page.value, PAGE_SIZE))
+
+const galleryDisplayPage = computed(() => Math.min(Math.max(1, page.value), galleryPageCount.value))
+
+const showListControls = computed(() => !loading.value && !listError.value && galleries.value.length > 0)
+
+const isFilteredEmpty = computed(
+  () => !loading.value && !listError.value && galleries.value.length > 0 && filteredGalleries.value.length === 0,
+)
+
 const isEmpty = computed(() => !loading.value && !listError.value && galleries.value.length === 0)
+
+watch(searchQuery, () => {
+  page.value = 1
+})
+
+watch(
+  () => filteredGalleries.value.length,
+  () => {
+    const pc = pageCount(filteredGalleries.value.length, PAGE_SIZE)
+    if (page.value > pc) {
+      page.value = pc
+    }
+  },
+)
+
+function galleryPrev() {
+  page.value = Math.max(1, page.value - 1)
+}
+
+function galleryNext() {
+  page.value = Math.min(galleryPageCount.value, page.value + 1)
+}
 
 function mapGallery(item) {
   return {
@@ -91,8 +138,28 @@ onMounted(() => {
       <p v-if="actionError" class="gallery-action-error" role="alert">{{ actionError }}</p>
       <p v-if="isEmpty" class="gallery-state">Aucune galerie pour le moment.</p>
 
-      <div v-if="!loading && !listError && galleries.length" class="gallery-grid">
-        <article v-for="gallery in galleries" :key="gallery.id" class="gallery-card">
+      <div v-if="showListControls" class="list-controls">
+        <label class="list-controls__search">
+          <span class="list-controls__search-label">Rechercher</span>
+          <input v-model="searchQuery" type="search" placeholder="Titre, public, privé…" autocomplete="off" />
+        </label>
+        <div class="list-controls__bar">
+          <p class="list-controls__meta">
+            {{ filteredGalleries.length }} galerie(s) · page {{ galleryDisplayPage }} / {{ galleryPageCount }}
+          </p>
+          <div class="list-controls__pager">
+            <button type="button" :disabled="galleryDisplayPage <= 1" @click="galleryPrev">Précédent</button>
+            <button type="button" :disabled="galleryDisplayPage >= galleryPageCount" @click="galleryNext">
+              Suivant
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p v-if="isFilteredEmpty" class="list-filter-empty">Aucun résultat pour cette recherche.</p>
+
+      <div v-if="!loading && !listError && visibleGalleries.length" class="gallery-grid">
+        <article v-for="gallery in visibleGalleries" :key="gallery.id" class="gallery-card">
           <div class="gallery-card__cover" aria-hidden="true" />
           <div class="gallery-card__footer">
             <span
