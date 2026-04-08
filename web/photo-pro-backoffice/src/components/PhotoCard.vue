@@ -1,5 +1,8 @@
 <script setup>
 import { computed } from 'vue'
+import { usePhotoDisplay } from '../composables/usePhotoDisplay'
+
+const { thumbSrc, altText, heading } = usePhotoDisplay()
 
 const props = defineProps({
   photo: {
@@ -15,7 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['toggle'])
 
 const label = computed(() => {
-  const name = props.photo.title || props.photo.originalName || 'Photo'
+  const name = altText(props.photo)
   return props.selected ? `Désélectionner ${name}` : `Sélectionner ${name}`
 })
 
@@ -38,11 +41,13 @@ function toggle() {
   >
     <img
       class="photo-card__image"
-      :src="photo.thumbnailUrl || photo.url"
-      :alt="photo.title || photo.originalName || 'Photo'"
+      :src="thumbSrc(photo)"
+      :alt="altText(photo)"
+      loading="lazy"
+      decoding="async"
     />
     <div class="photo-card__meta">
-      <strong>{{ photo.title || photo.originalName || 'Sans titre' }}</strong>
+      <strong>{{ heading(photo) }}</strong>
       <small>{{ photo.mimeType || 'image/jpeg' }}</small>
     </div>
   </article>

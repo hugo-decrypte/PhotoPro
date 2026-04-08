@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import { REQUIRE_AUTH } from '../config/auth'
 import { fetchGalleriesByPhotographer } from '../services/galleryApi'
 import { useAuthStore } from '../stores/auth'
@@ -75,7 +74,6 @@ onMounted(load)
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Tableau de bord</h1>
       <p class="dash-welcome">Bonjour, {{ authStore.displayName }}.</p>

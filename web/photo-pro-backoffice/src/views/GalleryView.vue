@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import AppHeader from '../components/AppHeader.vue'
 import { REQUIRE_AUTH } from '../config/auth'
 import '../css/list-controls.css'
 import { filterItems, pageCount, slicePage } from '../lib/listClient'
@@ -165,8 +164,6 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
-
     <main class="app-shell__main">
       <div class="gallery-page-head">
         <h1 class="app-shell__title">Galeries</h1>
