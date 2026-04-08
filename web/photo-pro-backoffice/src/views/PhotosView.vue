@@ -1,10 +1,12 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import '../css/list-controls.css'
 import { filterItems, pageCount, slicePage } from '../lib/listClient'
+import { REQUIRE_AUTH } from '../config/auth'
+import { normalizeApiError } from '../lib/apiError'
+import { addPhotosToGallery, fetchGalleriesByPhotographer } from '../services/galleryApi'
 import { deletePhoto, uploadPhoto } from '../services/photoApi'
 import { useAuthStore } from '../stores/auth'
 
@@ -17,10 +19,17 @@ const router = useRouter()
 const selectedIds = ref([])
 const authStore = useAuthStore()
 const fileInputRef = ref(null)
+const dropzoneDepth = ref(0)
 const uploadLoading = ref(false)
 const deleteLoading = ref(false)
 const uploadError = ref('')
 const uploadSuccess = ref('')
+
+const galleriesForPicker = ref([])
+const galleriesLoading = ref(false)
+const galleriesLoadError = ref('')
+const selectedGalleryId = ref('')
+const addToGalleryLoading = ref(false)
 
 const photos = ref([])
 
@@ -38,6 +47,8 @@ const visiblePhotos = computed(() => slicePage(filteredPhotos.value, photoPage.v
 const photoDisplayPage = computed(() => Math.min(Math.max(1, photoPage.value), photoPageCount.value))
 
 const isPhotosFilteredEmpty = computed(() => photos.value.length > 0 && filteredPhotos.value.length === 0)
+
+const isDropzoneActive = computed(() => dropzoneDepth.value > 0)
 
 watch(photoSearch, () => {
   photoPage.value = 1
@@ -108,6 +119,7 @@ function toggleSelection(id) {
 
 function clearSelection() {
   selectedIds.value = []
+  selectedGalleryId.value = ''
 }
 
 function createGalleryFromSelection() {
@@ -134,6 +146,76 @@ function createGalleryFromSelection() {
   )
 
   router.push({ name: 'gallery-new' })
+}
+
+async function loadGalleriesForPicker() {
+  authStore.loadFromStorage()
+  const pid = authStore.userId
+  if (!pid) {
+    galleriesForPicker.value = []
+    return
+  }
+  galleriesLoading.value = true
+  galleriesLoadError.value = ''
+  try {
+    const payload = await fetchGalleriesByPhotographer(pid)
+    const list = Array.isArray(payload?.data) ? payload.data : []
+    galleriesForPicker.value = list
+      .filter((g) => g?.id != null && g.id !== '')
+      .map((g) => ({
+        id: String(g.id),
+        title: String(g.title || 'Sans titre'),
+      }))
+  } catch (err) {
+    galleriesLoadError.value = normalizeApiError(err).message || err?.message || 'Chargement des galeries impossible.'
+    galleriesForPicker.value = []
+  } finally {
+    galleriesLoading.value = false
+  }
+}
+
+async function addSelectionToExistingGallery() {
+  if (!selectedIds.value.length) {
+    return
+  }
+  if (!selectedGalleryId.value) {
+    uploadError.value = 'Choisis une galerie dans la liste.'
+    uploadSuccess.value = ''
+    return
+  }
+
+  authStore.loadFromStorage()
+  if (!authStore.userId) {
+    uploadError.value = 'Connecte-toi pour ajouter des photos à une galerie.'
+    uploadSuccess.value = ''
+    if (REQUIRE_AUTH) {
+      await router.push({ name: 'login' })
+    }
+    return
+  }
+
+  addToGalleryLoading.value = true
+  uploadError.value = ''
+  uploadSuccess.value = ''
+
+  const photosPayload = selectedIds.value.map((id, index) => ({
+    photo_id: String(id),
+    order: index + 1,
+  }))
+
+  try {
+    const result = await addPhotosToGallery(selectedGalleryId.value, photosPayload)
+    if (!result?.success) {
+      throw new Error(result?.error || 'Ajout impossible.')
+    }
+    selectedIds.value = []
+    selectedGalleryId.value = ''
+    uploadSuccess.value = 'Photos ajoutées à la galerie.'
+  } catch (err) {
+    uploadError.value = normalizeApiError(err).message || err?.message || 'Ajout impossible.'
+  } finally {
+    addToGalleryLoading.value = false
+  }
 }
 
 async function deleteSelectedPhotos() {
@@ -183,6 +265,19 @@ function fileToDataUrl(file) {
   })
 }
 
+function isImageFile(file) {
+  if (!file || typeof file.type !== 'string') {
+    return false
+  }
+  if (file.type.startsWith('image/')) {
+    return true
+  }
+  if (!file.type && file.name) {
+    return /\.(jpe?g|png|gif|webp|avif|bmp|heic)$/i.test(file.name)
+  }
+  return false
+}
+
 function extractUploadedPhotoInfo(result, fallbackName, fallbackMime, fallbackUrl) {
   const payload = result?.data && typeof result.data === 'object' ? result.data : result
 
@@ -208,9 +303,19 @@ function extractUploadedPhotoInfo(result, fallbackName, fallbackMime, fallbackUr
   }
 }
 
-async function onFilesSelected(event) {
-  const files = Array.from(event?.target?.files || [])
-  if (!files.length) {
+/**
+ * @param {File[]} files
+ */
+async function uploadImageFiles(files) {
+  const raw = Array.from(files || [])
+  if (!raw.length) {
+    return
+  }
+
+  const images = raw.filter(isImageFile)
+  if (!images.length) {
+    uploadError.value = 'Aucun fichier image (JPEG, PNG, WebP, etc.).'
+    uploadSuccess.value = ''
     return
   }
 
@@ -223,7 +328,7 @@ async function onFilesSelected(event) {
   authStore.loadFromStorage()
 
   try {
-    for (const file of files) {
+    for (const file of images) {
       const localPreviewUrl = await fileToDataUrl(file)
       const result = await uploadPhoto({
         file,
@@ -255,6 +360,7 @@ async function onFilesSelected(event) {
 
     if (uploadedCount > 0) {
       uploadSuccess.value = `${uploadedCount} photo(s) uploadée(s) avec succès.`
+      loadGalleriesForPicker()
     } else if (firstUploadIssue) {
       uploadError.value = firstUploadIssue
     } else {
@@ -264,30 +370,75 @@ async function onFilesSelected(event) {
     uploadError.value = err.message || 'Upload impossible.'
   } finally {
     uploadLoading.value = false
+  }
+}
+
+async function onFilesSelected(event) {
+  try {
+    const files = Array.from(event?.target?.files || [])
+    await uploadImageFiles(files)
+  } finally {
     if (fileInputRef.value) {
       fileInputRef.value.value = ''
     }
   }
 }
 
+function onDropzoneEnter() {
+  dropzoneDepth.value += 1
+}
+
+function onDropzoneLeave() {
+  dropzoneDepth.value = Math.max(0, dropzoneDepth.value - 1)
+}
+
+function onDropzoneOver(event) {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy'
+  }
+}
+
+async function onDropzoneDrop(event) {
+  event.preventDefault()
+  dropzoneDepth.value = 0
+  const dt = event.dataTransfer
+  if (!dt?.files?.length) {
+    return
+  }
+  await uploadImageFiles(Array.from(dt.files))
+}
+
 onMounted(() => {
   loadPersistedPhotos()
+  loadGalleriesForPicker()
 })
 </script>
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Photos</h1>
-      <div class="photos-toolbar">
+      <div
+        class="photos-dropzone"
+        :class="{ 'photos-dropzone--active': isDropzoneActive }"
+        role="region"
+        aria-label="Zone d’import de photos"
+        @dragenter.prevent="onDropzoneEnter"
+        @dragleave.prevent="onDropzoneLeave"
+        @dragover.prevent="onDropzoneOver"
+        @drop.prevent="onDropzoneDrop"
+      >
+        <p class="photos-dropzone__title">Glisse-dépose plusieurs images ici</p>
+        <p class="photos-dropzone__hint">Fichiers image uniquement · sélection multiple</p>
+        <p class="photos-dropzone__or">ou</p>
         <button
           type="button"
-          class="photos-toolbar__btn"
+          class="photos-toolbar__btn photos-toolbar__btn--standalone"
           :disabled="uploadLoading || deleteLoading"
           @click="openFilePicker"
         >
-          {{ uploadLoading ? 'Upload…' : 'Ajouter des photos' }}
+          {{ uploadLoading ? 'Upload…' : 'Parcourir les fichiers' }}
         </button>
         <input
           ref="fileInputRef"
@@ -300,21 +451,58 @@ onMounted(() => {
       </div>
       <p v-if="uploadError" class="photos-toolbar__msg photos-toolbar__msg--error" role="alert">{{ uploadError }}</p>
       <p v-if="uploadSuccess" class="photos-toolbar__msg photos-toolbar__msg--success">{{ uploadSuccess }}</p>
-      <p v-if="selectedIds.length">
-        {{ selectedIds.length }} photo(s) sélectionnée(s).
-        <button type="button" class="photos-toolbar__btn" @click="clearSelection">Tout désélectionner</button>
-        <button type="button" class="photos-toolbar__btn photos-toolbar__btn--primary" @click="createGalleryFromSelection">
-          Créer une galerie avec la sélection
-        </button>
-        <button
-          type="button"
-          class="photos-toolbar__btn photos-toolbar__btn--danger"
-          :disabled="deleteLoading || uploadLoading"
-          @click="deleteSelectedPhotos"
+      <div v-if="selectedIds.length" class="photos-toolbar-selection">
+        <p class="photos-toolbar-selection__summary">{{ selectedIds.length }} photo(s) sélectionnée(s).</p>
+        <div class="photos-toolbar-selection__actions">
+          <button type="button" class="photos-toolbar__btn" @click="clearSelection">Tout désélectionner</button>
+          <button
+            type="button"
+            class="photos-toolbar__btn photos-toolbar__btn--primary"
+            @click="createGalleryFromSelection"
+          >
+            Créer une galerie avec la sélection
+          </button>
+          <button
+            type="button"
+            class="photos-toolbar__btn photos-toolbar__btn--danger"
+            :disabled="deleteLoading || uploadLoading || addToGalleryLoading"
+            @click="deleteSelectedPhotos"
+          >
+            {{ deleteLoading ? 'Suppression…' : 'Supprimer la sélection' }}
+          </button>
+        </div>
+        <div class="photos-toolbar-selection__existing">
+          <span class="photos-toolbar-selection__existing-label">Ou ajouter à une galerie existante :</span>
+          <select
+            v-model="selectedGalleryId"
+            class="photos-toolbar-selection__select"
+            :disabled="galleriesLoading || addToGalleryLoading || uploadLoading"
+          >
+            <option value="">{{ galleriesLoading ? 'Chargement des galeries…' : '— Choisir une galerie —' }}</option>
+            <option v-for="g in galleriesForPicker" :key="g.id" :value="g.id">{{ g.title }}</option>
+          </select>
+          <button
+            type="button"
+            class="photos-toolbar__btn photos-toolbar__btn--primary"
+            :disabled="!selectedGalleryId || addToGalleryLoading || uploadLoading || deleteLoading"
+            @click="addSelectionToExistingGallery"
+          >
+            {{ addToGalleryLoading ? 'Ajout…' : 'Ajouter à la galerie' }}
+          </button>
+        </div>
+        <p v-if="galleriesLoadError" class="photos-toolbar__msg photos-toolbar__msg--error" role="alert">
+          {{ galleriesLoadError }}
+        </p>
+        <p
+          v-else-if="!galleriesLoading && !galleriesForPicker.length && authStore.isAuthenticated"
+          class="photos-toolbar-selection__hint"
         >
-          {{ deleteLoading ? 'Suppression…' : 'Supprimer la sélection' }}
-        </button>
-      </p>
+          Tu n’as pas encore de galerie. Crée-en une depuis Galeries, puis reviens ici.
+        </p>
+        <p v-else-if="!authStore.isAuthenticated" class="photos-toolbar-selection__hint">
+          Connecte-toi pour lister tes galeries et y ajouter des photos.
+        </p>
+      </div>
       <p v-else class="photos-toolbar__hint">Aucune sélection</p>
       <p v-if="photos.length === 0" class="photos-toolbar__hint">
         Aucune photo pour le moment. Ajoutez vos photos pour commencer.
@@ -350,11 +538,42 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.photos-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 0.75rem;
+.photos-dropzone {
+  margin: 0 0 1rem;
+  padding: 1.35rem 1rem;
+  border: 2px dashed #c5cae8;
+  border-radius: 12px;
+  background: #f9faff;
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.photos-dropzone--active {
+  border-color: #4a5fc9;
+  background: #eef1ff;
+}
+
+.photos-dropzone__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2e2e3a;
+}
+
+.photos-dropzone__hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  color: #6b6b78;
+}
+
+.photos-dropzone__or {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: #9a9aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .photos-toolbar__input {
@@ -377,6 +596,10 @@ onMounted(() => {
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
+}
+
+.photos-toolbar__btn--standalone {
+  margin-left: 0;
 }
 
 .photos-toolbar__btn:hover {
@@ -414,5 +637,62 @@ onMounted(() => {
 
 .photos-toolbar__msg--success {
   color: #2e7d32;
+}
+
+.photos-toolbar-selection {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e8e8ef;
+}
+
+.photos-toolbar-selection__summary {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #3a3a45;
+}
+
+.photos-toolbar-selection__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.photos-toolbar-selection__existing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.photos-toolbar-selection__existing-label {
+  font-size: 0.85rem;
+  color: #6b6b78;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .photos-toolbar-selection__existing-label {
+    width: auto;
+  }
+}
+
+.photos-toolbar-selection__select {
+  min-width: min(100%, 220px);
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #d8d8e4;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.85rem;
+  background: #fff;
+  color: #1e1e28;
+}
+
+.photos-toolbar-selection__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: #6b6b78;
 }
 </style>

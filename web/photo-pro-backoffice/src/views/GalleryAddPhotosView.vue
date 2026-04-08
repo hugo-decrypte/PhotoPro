@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import { addPhotosToGallery, fetchGalleryPhotos } from '../services/galleryApi'
 import { normalizeApiError } from '../lib/apiError'
@@ -138,7 +137,6 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Ajouter des photos</h1>
       <p class="gallery-add-photos__subtitle">{{ galleryTitle }}</p>

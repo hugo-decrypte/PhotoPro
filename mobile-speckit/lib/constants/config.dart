@@ -1,6 +1,6 @@
 class Config {
-  static const String baseUrl = 'http://192.168.1.18:6083';
-  static const String s3ServerUrl = 'http://192.168.1.18:8888';
+  static const String baseUrl = 'http://docketu.iutnc.univ-lorraine.fr:56063';
+  static const String s3ServerUrl = 'http://docketu.iutnc.univ-lorraine.fr:56070';
   
   // Endpoints
   static const String galleriesEndpoint = '/galeries';

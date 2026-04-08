@@ -1,5 +1,5 @@
 # Base PHP
-FROM php:8.3-cli
+FROM php:8.4-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \

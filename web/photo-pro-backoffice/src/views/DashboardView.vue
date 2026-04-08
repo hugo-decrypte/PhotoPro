@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import { REQUIRE_AUTH } from '../config/auth'
 import { fetchGalleriesByPhotographer } from '../services/galleryApi'
 import { useAuthStore } from '../stores/auth'
@@ -75,7 +74,6 @@ onMounted(load)
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Tableau de bord</h1>
       <p class="dash-welcome">Bonjour, {{ authStore.displayName }}.</p>
@@ -92,19 +90,6 @@ onMounted(load)
       </div>
 
       <p v-if="error" class="dash-error" role="alert">{{ error }}</p>
-
-      <h2 class="dash-h2">Raccourcis</h2>
-      <ul class="dash-shortcuts">
-        <li>
-          <RouterLink :to="{ name: 'photos' }">Photos</RouterLink>
-        </li>
-        <li>
-          <RouterLink :to="{ name: 'gallery' }">Galeries</RouterLink>
-        </li>
-        <li>
-          <RouterLink :to="{ name: 'gallery-new' }">Nouvelle galerie</RouterLink>
-        </li>
-      </ul>
 
       <h2 class="dash-h2">Galeries (aperçu)</h2>
       <p v-if="loading" class="dash-muted">Chargement des galeries…</p>
@@ -188,26 +173,6 @@ onMounted(load)
   margin: 0 0 0.5rem;
   color: #6b6b78;
   font-size: 0.9rem;
-}
-
-.dash-shortcuts {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-}
-
-.dash-shortcuts a {
-  color: #4a5fc9;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.dash-shortcuts a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .dash-recent {

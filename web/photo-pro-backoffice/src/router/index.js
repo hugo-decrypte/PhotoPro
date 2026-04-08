@@ -5,6 +5,7 @@ import DashboardView from '../views/DashboardView.vue'
 import GalleryView from '../views/GalleryView.vue'
 import GalleryEditView from '../views/GalleryEditView.vue'
 import GalleryAddPhotosView from '../views/GalleryAddPhotosView.vue'
+import GalleryPreviewView from '../views/GalleryPreviewView.vue'
 import LoginView from '../views/LoginView.vue'
 import PhotosView from '../views/PhotosView.vue'
 import RegisterView from '../views/RegisterView.vue'
@@ -49,6 +50,11 @@ const router = createRouter({
       path: '/gallery/:galleryId/photos',
       name: 'gallery-photos',
       component: GalleryAddPhotosView,
+    },
+    {
+      path: '/gallery/:galleryId/preview',
+      name: 'gallery-preview',
+      component: GalleryPreviewView,
     },
     {
       path: '/settings',
