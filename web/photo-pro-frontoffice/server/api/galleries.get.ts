@@ -15,22 +15,29 @@ export default defineEventHandler(async () => {
 
     try {
         const result = await client.query(`
-      SELECT
+      SELECT 
         g.id,
         g.title,
         g.description,
         g.cover_photo_id,
-        g.created_at,
         g.published_at,
-        COUNT(gp.photo_id) AS photo_count
+        COUNT(gp.photo_id) as photo_count
       FROM gallery g
       LEFT JOIN gallery_photo gp ON gp.gallery_id = g.id
       WHERE g.status = 'PUBLISHED'
         AND g.type = 'PUBLIC'
       GROUP BY g.id
-      ORDER BY g.published_at DESC
+      ORDER BY g.published_at DESC NULLS LAST
     `)
+
         return result.rows
+
+    } catch (err) {
+        console.error(err)
+        throw createError({
+            statusCode: 500,
+            message: 'Erreur récupération galeries'
+        })
     } finally {
         await client.end()
     }

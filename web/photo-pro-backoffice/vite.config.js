@@ -11,6 +11,12 @@ export default defineConfig({
     vueDevTools(),
   ],
   server: {
+    host: '0.0.0.0',
+    allowedHosts: [
+      'docketu.iutnc.univ-lorraine.fr',
+      'localhost',
+      '.localhost'
+    ],
     proxy: {
       '/api': {
         target: 'http://app-gateway-gestion:80',
