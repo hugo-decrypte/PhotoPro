@@ -30,3 +30,4 @@ S3/data
 api-back/
 .output/
 .nuxt/
+**/node_modules/
