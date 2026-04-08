@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 404, message: 'Galerie introuvable' })
         }
 
-        const gallery = galleryResult.rows[0]
+        let gallery = galleryResult.rows[0]
 
         if (gallery.type === 'PRIVATE') {
             return { gallery, photos: null, private: true }
@@ -58,33 +58,46 @@ export default defineEventHandler(async (event) => {
         await photoClient.connect()
 
         const photosResult = await photoClient.query(`
-      SELECT id, title, s3_key, mime_type
-      FROM photo
-      WHERE id = ANY($1)
-    `, [photoIds])
+            SELECT id, title, s3_key, mime_type
+            FROM photo
+            WHERE id = ANY($1::uuid[])
+        `, [photoIds])
 
         const photoMap = new Map(photosResult.rows.map(p => [p.id, p]))
+
+        console.log('Photos from DB:', photosResult.rows);
 
         // 🔥 SAFE MERGE
         const photos = gpResult.rows
             .map(gp => {
                 const photo = photoMap.get(gp.photo_id)
-
-                if (!photo) return null // évite crash
-
+                if (!photo) return null
                 return {
                     ...photo,
                     order: gp.order,
-                    url: `${config.public.s3Endpoint}/photopro-photos/${photo.s3_key}`
+                    url: `${config.public.s3Endpoint}/${photo.s3_key}`
                 }
             })
             .filter(Boolean)
+
+        // 🔹 COVER PHOTO URL
+        if (gallery.cover_photo_id) {
+            const coverPhoto = photoMap.get(gallery.cover_photo_id)
+            if (coverPhoto) {
+                gallery = {
+                    ...gallery,
+                    cover_photo_url: `${config.public.s3Endpoint}/${coverPhoto.s3_key}`
+                }
+            }
+        }
+
+        console.log('Photos from DB:', photosResult.rows);
+
 
         return { gallery, photos, private: false }
 
     } catch (err) {
         console.error('API ERROR:', err)
-
         throw createError({
             statusCode: 500,
             message: 'Erreur serveur galerie'
