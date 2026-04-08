@@ -224,6 +224,15 @@ onMounted(() => {
             <div class="gallery-card__actions">
               <RouterLink
                 :to="{
+                  name: 'gallery-preview',
+                  params: { galleryId: gallery.id },
+                  query: { title: gallery.title },
+                }"
+              >
+                Aperçu & diaporama
+              </RouterLink>
+              <RouterLink
+                :to="{
                   name: 'gallery-photos',
                   params: { galleryId: gallery.id },
                   query: { title: gallery.title },
