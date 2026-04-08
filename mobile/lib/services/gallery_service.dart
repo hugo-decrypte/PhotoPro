@@ -6,26 +6,31 @@ import '../models/gallery.dart';
 
 class GalleryService {
   Future<Gallery> accessPrivateGallery(String id, String code) async {
-    final url = '${ApiConfig.baseUrl}/galeries/$id/privee?code=$code';
+  final url = '${ApiConfig.baseUrl}/galeries/$id/privee?code=$code';
 
-    final response = await http.get(Uri.parse(url));
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+  final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception(
-        data is Map<String, dynamic>
-            ? (data['error'] ?? data['message'] ?? 'Erreur API')
-            : 'Erreur API',
-      );
-    }
+  print('ACCESS URL: $url');
+  print('STATUS: ${response.statusCode}');
+  print('BODY: ${response.body}');
 
-    final payload =
-        data is Map<String, dynamic> && data['data'] is Map<String, dynamic>
-            ? data['data'] as Map<String, dynamic>
-            : data as Map<String, dynamic>;
+  final data = response.body.isNotEmpty ? jsonDecode(response.body) : {};
 
-    return Gallery.fromJson(payload);
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw Exception(
+      data is Map<String, dynamic>
+          ? (data['error'] ?? data['message'] ?? 'Erreur API')
+          : 'Erreur API',
+    );
   }
+
+  final payload =
+      data is Map<String, dynamic> && data['data'] is Map<String, dynamic>
+          ? data['data'] as Map<String, dynamic>
+          : data as Map<String, dynamic>;
+
+  return Gallery.fromJson(payload);
+}
 
  Future<String> getPhotoUrl(String photoId) async {
   final url = '${ApiConfig.baseUrl}/photos/$photoId';
@@ -38,7 +43,7 @@ class GalleryService {
           ? data['data'] as Map<String, dynamic>
           : data as Map<String, dynamic>;
 
-  final s3Key = payload['s3_key']?.toString();
+  final s3Key = payload['s3Key']?.toString();
 
   if (s3Key == null || s3Key.isEmpty) {
     throw Exception('s3_key introuvable pour la photo');
