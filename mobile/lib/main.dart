@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF3F1F6),
 
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF8EA0F0),
+          backgroundColor: Color.fromARGB(255, 27, 27, 27),
           foregroundColor: Colors.white,
           elevation: 0,
         ),
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
 
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF8EA0F0),
+            backgroundColor: const Color.fromARGB(255, 27, 27, 27),
             foregroundColor: Colors.white,
           ),
         ),
