@@ -52,7 +52,7 @@ services:
       - NUXT_PHOTO_DB_NAME=${PHOTO_DB_NAME}
 
       # ✅ S3 (fix)
-      - NUXT_PUBLIC_S3_ENDPOINT=http://seaweed-s3:8333
+      - NUXT_PUBLIC_S3_ENDPOINT=http://localhost:8333
 
   app-gateway-gestion:
     build:
@@ -187,7 +187,7 @@ services:
     networks:
       - photopro.net
     volumes:
-      - photopro_photo_data:/var/lib/postgresql/data   # ✅ AJOUT
+      - photopro_photo_data:/var/lib/postgresql/data # ✅ AJOUT
       - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
       - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 

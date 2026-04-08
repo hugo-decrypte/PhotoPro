@@ -18,40 +18,37 @@ class _HomeScreenState extends State<HomeScreen> {
   bool loading = false;
 
   Future<void> access() async {
-  setState(() {
-    loading = true;
-    error = '';
-  });
-
-  try {
-    final gallery = await service.accessPrivateGallery(
-      idController.text.trim(),
-      codeController.text.trim(),
-    );
-
-    print('SUCCESS gallery loaded: ${gallery.title}');
-
-    if (!mounted) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => GalleryScreen(gallery: gallery),
-      ),
-    );
-  } catch (e) {
-    print('ERROR access(): $e');
     setState(() {
-      error = "Erreur d'accès : $e";
+      loading = true;
+      error = '';
     });
-  } finally {
-    if (mounted) {
+
+    try {
+      final gallery = await service.accessPrivateGallery(
+        idController.text.trim(),
+        codeController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => GalleryScreen(gallery: gallery),
+        ),
+      );
+    } catch (e) {
       setState(() {
-        loading = false;
+        error = "Erreur d'accès : $e";
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     }
   }
-}
 
   @override
   void dispose() {

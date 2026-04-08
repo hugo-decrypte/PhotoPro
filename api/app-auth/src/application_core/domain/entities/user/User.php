@@ -23,11 +23,17 @@ class User {
 
     public static function fromArray(array $data): self
     {
-        return new self(
+        $user = new self(
             $data['id'],
             $data['email'],
             $data['password']
         );
+
+        $user->firstName = (string)($data['first_name'] ?? '');
+        $user->name = (string)($data['name'] ?? '');
+        $user->pseudo = (string)($data['pseudo'] ?? '');
+
+        return $user;
     }
 
     /**

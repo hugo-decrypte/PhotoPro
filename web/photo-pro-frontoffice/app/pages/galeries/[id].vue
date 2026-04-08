@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="!pending && gallery" class="py-8">
+  <v-container v-if="!pending && gallery && !data?.private" class="py-8">
 
     <!-- Header -->
     <div class="gallery-header mb-6">
@@ -79,6 +79,7 @@
     <div v-if="mode === 'slideshow'" class="slideshow-wrapper">
       <div class="slideshow-main">
         <img
+            v-if="photos.length > 0 && photos[currentIndex]"
             :src="`${s3Endpoint}/photopro-photos/${photos[currentIndex]?.photo_id}`"
             class="slideshow-img"
         />
@@ -108,16 +109,18 @@
 <script setup lang="ts">
 const route = useRoute()
 const config = useRuntimeConfig()
-const s3Endpoint = config.public.s3Endpoint
+const s3Endpoint = config.public.s3Endpoint || 'http://localhost:8333'
 
 const { data, pending, error } = await useAsyncData(
-    `gallery-${route.params.id}`,
-    () => $fetch(`/api/galleries/${route.params.id}`)
+    `gallery-${route.params.id}-${route.query.code}`,
+    () => $fetch(`/api/galleries/${route.params.id}`, {
+      params: { code: route.query.code }
+    })
 )
 
-// 🔥 redirect propre
+// 🔥 Redirection immédiate si privée
 watchEffect(() => {
-  if (data.value && data.value.private) {
+  if (data.value?.private) {
     navigateTo(`/galeries/${route.params.id}/privee`)
   }
 })

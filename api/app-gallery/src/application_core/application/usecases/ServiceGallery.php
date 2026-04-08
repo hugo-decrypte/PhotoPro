@@ -70,6 +70,15 @@ class ServiceGallery implements ServiceGalleryInterface
 
         $galleryId = Uuid::uuid4()->toString();
 
+        $coverRaw = $data['cover_photo_id'] ?? null;
+        $coverPhotoId = null;
+        if ($coverRaw !== null && $coverRaw !== '') {
+            $coverTrim = trim((string) $coverRaw);
+            if ($coverTrim !== '') {
+                $coverPhotoId = $coverTrim;
+            }
+        }
+
         $galleryData = [
             'id' => $galleryId,
             'photographer_id' => $photographerId,
@@ -77,7 +86,7 @@ class ServiceGallery implements ServiceGalleryInterface
             'description' => $data['description'] ?? null,
             'status' => 'DRAFT',
             'type' => $type,
-            'cover_photo_id' => null,
+            'cover_photo_id' => $coverPhotoId,
             'created_at' => date('Y-m-d H:i:s'),
             'published_at' => null,
         ];

@@ -11,10 +11,14 @@ import '../css/gallery-view.css'
 
 const PAGE_SIZE = 6
 
+const PHOTOS_STORAGE_KEY = 'photopro_uploaded_photos'
+
 const authStore = useAuthStore()
 const router = useRouter()
 
 const galleries = ref([])
+/** Pot commun (URLs affichées pour les couvertures) */
+const potPhotos = ref([])
 const loading = ref(false)
 const listError = ref('')
 const actionError = ref('')
@@ -66,12 +70,46 @@ function galleryNext() {
 }
 
 function mapGallery(item) {
+  const cid = item?.coverPhotoId ?? item?.cover_photo_id
   return {
     id: String(item?.id || ''),
     title: String(item?.title || 'Sans titre'),
     visibility: item?.type === 'private' ? 'private' : 'public',
     isPublished: Boolean(item?.status),
     photosCount: Number.isFinite(item?.photosCount) ? item.photosCount : null,
+    coverPhotoId: cid != null && cid !== '' ? String(cid) : '',
+  }
+}
+
+const coverUrlByGalleryId = computed(() => {
+  const out = {}
+  const photos = potPhotos.value
+  for (const g of galleries.value) {
+    if (!g.coverPhotoId) {
+      out[g.id] = ''
+      continue
+    }
+    const p = photos.find((x) => String(x.id) === String(g.coverPhotoId))
+    out[g.id] = p?.thumbnailUrl || p?.url || ''
+  }
+  return out
+})
+
+function loadPotPhotos() {
+  try {
+    const raw = localStorage.getItem(PHOTOS_STORAGE_KEY)
+    if (!raw) {
+      potPhotos.value = []
+      return
+    }
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      potPhotos.value = []
+      return
+    }
+    potPhotos.value = parsed.filter((p) => p && p.id && (p.url || p.thumbnailUrl))
+  } catch {
+    potPhotos.value = []
   }
 }
 
@@ -120,6 +158,7 @@ async function togglePublish(gallery) {
 }
 
 onMounted(() => {
+  loadPotPhotos()
   loadGalleries()
 })
 </script>
@@ -160,7 +199,14 @@ onMounted(() => {
 
       <div v-if="!loading && !listError && visibleGalleries.length" class="gallery-grid">
         <article v-for="gallery in visibleGalleries" :key="gallery.id" class="gallery-card">
-          <div class="gallery-card__cover" aria-hidden="true" />
+          <div class="gallery-card__cover" aria-hidden="true">
+            <img
+              v-if="coverUrlByGalleryId[gallery.id]"
+              class="gallery-card__cover-img"
+              :src="coverUrlByGalleryId[gallery.id]"
+              alt=""
+            />
+          </div>
           <div class="gallery-card__footer">
             <span
               class="gallery-card__badge"
@@ -176,6 +222,15 @@ onMounted(() => {
               <template v-if="gallery.photosCount !== null"> · {{ gallery.photosCount }} photo(s)</template>
             </p>
             <div class="gallery-card__actions">
+              <RouterLink
+                :to="{
+                  name: 'gallery-preview',
+                  params: { galleryId: gallery.id },
+                  query: { title: gallery.title },
+                }"
+              >
+                Aperçu & diaporama
+              </RouterLink>
               <RouterLink
                 :to="{
                   name: 'gallery-photos',
