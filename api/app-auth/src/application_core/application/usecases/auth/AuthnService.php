@@ -43,6 +43,7 @@ class AuthnService implements AuthnServiceInterface
         return new AuthDTO(
             id: $user->id,
             email: $user->email,
+            pseudo: $user->pseudo,
         );
     }
 

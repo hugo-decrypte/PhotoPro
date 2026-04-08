@@ -10,15 +10,17 @@ class AuthDTO {
     private string $email;
     private string $refreshToken;
     private string $accessToken;
+    private string $pseudo;
 
     /**
      * @param string $id
      * @param string $email
      */
-    public function __construct(string $id, string $email)
+    public function __construct(string $id, string $email, string $pseudo = '')
     {
         $this->id = $id;
         $this->email = $email;
+        $this->pseudo = $pseudo;
     }
 
     public function setRefreshToken(string $refreshToken): void
@@ -53,6 +55,11 @@ class AuthDTO {
     public function getAccessToken(): string
     {
         return $this->accessToken;
+    }
+
+    public function getPseudo(): string
+    {
+        return $this->pseudo;
     }
 
 }
