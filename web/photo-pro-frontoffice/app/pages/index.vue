@@ -4,10 +4,71 @@
       <h1 style="font-size: 22px; font-weight: 500; color: #051630;">
         Galeries publiques
       </h1>
-      <span style="font-size: 13px; color: #999;">
-        {{ galleries.length }} galeries
-      </span>
+      <div class="d-flex align-center ga-3">
+        <v-btn
+          variant="tonal"
+          color="primary"
+          prepend-icon="mdi-lock-open-outline"
+          size="small"
+          @click="showPrivateDialog = true"
+        >
+          Accéder à une galerie privée
+        </v-btn>
+        <span style="font-size: 13px; color: #999;">
+          {{ galleries.length }} galeries
+        </span>
+      </div>
     </div>
+
+    <!-- Dialogue pour galerie privée -->
+    <v-dialog v-model="showPrivateDialog" max-width="450">
+      <v-card class="pa-4">
+        <v-card-title class="text-h6 pb-2">Accès galerie privée</v-card-title>
+        <v-card-text>
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            Veuillez saisir les informations de votre accès privé.
+          </p>
+          
+          <v-text-field
+            v-model="privateId"
+            label="ID de la galerie"
+            placeholder="Ex: b3000003-..."
+            variant="outlined"
+            density="comfortable"
+            class="mb-3"
+            hide-details
+            :loading="dialogLoading"
+            @keyup.enter="goToPrivate"
+          ></v-text-field>
+
+          <v-text-field
+            v-model="privateCode"
+            label="Code secret / Mot de passe"
+            placeholder="Ex: MARIAGE2024"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-key"
+            :error-messages="dialogError"
+            @input="dialogError = ''"
+            :loading="dialogLoading"
+            @keyup.enter="goToPrivate"
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions class="pt-0 px-6 pb-6">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="showPrivateDialog = false">Annuler</v-btn>
+          <v-btn 
+            color="primary" 
+            variant="flat" 
+            :loading="dialogLoading"
+            :disabled="!privateId.trim() || !privateCode.trim() || dialogLoading" 
+            @click="goToPrivate"
+          >
+            Accéder à la galerie
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <div class="masonry-grid">
       <NuxtLink
@@ -46,13 +107,45 @@
 
 <script setup lang="ts">
 const config = useRuntimeConfig()
-const s3Endpoint = config.public.s3Endpoint
+const s3Endpoint = config.public.s3Endpoint || 'http://localhost:8333'
+
+const showPrivateDialog = ref(false)
+const privateId = ref('')
+const privateCode = ref('')
+const dialogLoading = ref(false)
+const dialogError = ref('')
 
 const { data, pending, error } = await useAsyncData('galleries', () =>
     $fetch('/api/galleries')
 )
 
 const galleries = computed(() => data.value ?? [])
+
+async function goToPrivate() {
+  if (!privateId.value.trim() || !privateCode.value.trim()) return
+
+  dialogLoading.value = true
+  dialogError.value = ''
+
+  try {
+    // On vérifie le couple ID/Code via l'API Nuxt locale
+    await $fetch(`/api/galleries/${privateId.value.trim()}`, {
+      params: { code: privateCode.value.trim() }
+    })
+
+    // Si ça passe (pas de 403/404), on navigue
+    navigateTo(`/galeries/${privateId.value.trim()}?code=${privateCode.value.trim()}`)
+    showPrivateDialog.value = false
+  } catch (err: any) {
+    if (err.statusCode === 403 || err.statusCode === 404) {
+      dialogError.value = "Identifiant ou code secret invalide."
+    } else {
+      dialogError.value = "Une erreur est survenue lors de la vérification."
+    }
+  } finally {
+    dialogLoading.value = false
+  }
+}
 </script>
 
 <style scoped>

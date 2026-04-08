@@ -35,6 +35,18 @@ $photoMappings = [
     // Photos vivien (desert)
     'vivien/desert1.jpg' => 'uploads/2ab11251-e3df-464f-89bc-b6e87888b6aa.jpg',
     'vivien/desert2.jpg' => 'uploads/5d75fca9-fb17-4f77-a99f-fbcfe7889cdf.jpg',
+
+    'bob/pont1.jpg' => 'uploads/b694dd61-1008-4b7e-985d-4ed1cafe15c6.jpg',
+
+    'alice/lego1.jpg' => 'uploads/15ba7276-c177-44f8-bbf1-24c24d1e8d34.jpg',
+
+    'thomas/papier1.jpg' => 'uploads/f501b429-d7b3-425b-a735-347e0fb670a6.jpg',
+
+    'antoine/japon1.jpg' => 'uploads/e71089c8-f692-44bb-8769-1254ce9a8081.jpg',
+
+    'marie/plot1.jpg' => 'uploads/86dc5945-1518-4ef0-bb88-91431c7b1729.jpg',
+
+    'ophelia/voiture1.jpg' => 'uploads/b1d4a75a-a506-40ac-8b61-b95aa022a299.jpg',
 ];
 
 echo "=================================\n";

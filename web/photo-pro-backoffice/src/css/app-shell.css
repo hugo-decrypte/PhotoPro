@@ -8,7 +8,7 @@ body {
 }
 
 .app-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 72px);
   margin: 0;
   background: #f7f6fb;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -29,6 +29,7 @@ body {
   padding: 0 1.5rem;
   background: #94a8f9;
   color: #fff;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .app-shell__header-left {

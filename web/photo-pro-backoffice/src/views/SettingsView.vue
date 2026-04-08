@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import { changePassword } from '../services/authApi'
 import { useAuthStore } from '../stores/auth'
 import '../css/settings-view.css'
@@ -63,7 +62,6 @@ async function onSubmit() {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Paramètres</h1>
 

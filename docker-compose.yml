@@ -187,7 +187,7 @@ services:
     networks:
       - photopro.net
     volumes:
-      - photopro_photo_data:/var/lib/postgresql/data   # ✅ AJOUT
+      - photopro_photo_data:/var/lib/postgresql/data # ✅ AJOUT
       - ./sql/photo/01_photopro_photo.schema.sql:/docker-entrypoint-initdb.d/05.schema.sql
       - ./sql/photo/02_photopro_photo.data.sql:/docker-entrypoint-initdb.d/06.data.sql
 

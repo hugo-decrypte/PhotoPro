@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '../components/AppHeader.vue'
 import PhotoGrid from '../components/PhotoGrid.vue'
 import '../css/list-controls.css'
 import { filterItems, pageCount, slicePage } from '../lib/listClient'
@@ -17,6 +16,7 @@ const router = useRouter()
 const selectedIds = ref([])
 const authStore = useAuthStore()
 const fileInputRef = ref(null)
+const dropzoneDepth = ref(0)
 const uploadLoading = ref(false)
 const deleteLoading = ref(false)
 const uploadError = ref('')
@@ -38,6 +38,8 @@ const visiblePhotos = computed(() => slicePage(filteredPhotos.value, photoPage.v
 const photoDisplayPage = computed(() => Math.min(Math.max(1, photoPage.value), photoPageCount.value))
 
 const isPhotosFilteredEmpty = computed(() => photos.value.length > 0 && filteredPhotos.value.length === 0)
+
+const isDropzoneActive = computed(() => dropzoneDepth.value > 0)
 
 watch(photoSearch, () => {
   photoPage.value = 1
@@ -183,6 +185,19 @@ function fileToDataUrl(file) {
   })
 }
 
+function isImageFile(file) {
+  if (!file || typeof file.type !== 'string') {
+    return false
+  }
+  if (file.type.startsWith('image/')) {
+    return true
+  }
+  if (!file.type && file.name) {
+    return /\.(jpe?g|png|gif|webp|avif|bmp|heic)$/i.test(file.name)
+  }
+  return false
+}
+
 function extractUploadedPhotoInfo(result, fallbackName, fallbackMime, fallbackUrl) {
   const payload = result?.data && typeof result.data === 'object' ? result.data : result
 
@@ -208,9 +223,19 @@ function extractUploadedPhotoInfo(result, fallbackName, fallbackMime, fallbackUr
   }
 }
 
-async function onFilesSelected(event) {
-  const files = Array.from(event?.target?.files || [])
-  if (!files.length) {
+/**
+ * @param {File[]} files
+ */
+async function uploadImageFiles(files) {
+  const raw = Array.from(files || [])
+  if (!raw.length) {
+    return
+  }
+
+  const images = raw.filter(isImageFile)
+  if (!images.length) {
+    uploadError.value = 'Aucun fichier image (JPEG, PNG, WebP, etc.).'
+    uploadSuccess.value = ''
     return
   }
 
@@ -223,7 +248,7 @@ async function onFilesSelected(event) {
   authStore.loadFromStorage()
 
   try {
-    for (const file of files) {
+    for (const file of images) {
       const localPreviewUrl = await fileToDataUrl(file)
       const result = await uploadPhoto({
         file,
@@ -264,10 +289,43 @@ async function onFilesSelected(event) {
     uploadError.value = err.message || 'Upload impossible.'
   } finally {
     uploadLoading.value = false
+  }
+}
+
+async function onFilesSelected(event) {
+  try {
+    const files = Array.from(event?.target?.files || [])
+    await uploadImageFiles(files)
+  } finally {
     if (fileInputRef.value) {
       fileInputRef.value.value = ''
     }
   }
+}
+
+function onDropzoneEnter() {
+  dropzoneDepth.value += 1
+}
+
+function onDropzoneLeave() {
+  dropzoneDepth.value = Math.max(0, dropzoneDepth.value - 1)
+}
+
+function onDropzoneOver(event) {
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy'
+  }
+}
+
+async function onDropzoneDrop(event) {
+  event.preventDefault()
+  dropzoneDepth.value = 0
+  const dt = event.dataTransfer
+  if (!dt?.files?.length) {
+    return
+  }
+  await uploadImageFiles(Array.from(dt.files))
 }
 
 onMounted(() => {
@@ -277,17 +335,28 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
     <main class="app-shell__main">
       <h1 class="app-shell__title">Photos</h1>
-      <div class="photos-toolbar">
+      <div
+        class="photos-dropzone"
+        :class="{ 'photos-dropzone--active': isDropzoneActive }"
+        role="region"
+        aria-label="Zone d’import de photos"
+        @dragenter.prevent="onDropzoneEnter"
+        @dragleave.prevent="onDropzoneLeave"
+        @dragover.prevent="onDropzoneOver"
+        @drop.prevent="onDropzoneDrop"
+      >
+        <p class="photos-dropzone__title">Glisse-dépose plusieurs images ici</p>
+        <p class="photos-dropzone__hint">Fichiers image uniquement · sélection multiple</p>
+        <p class="photos-dropzone__or">ou</p>
         <button
           type="button"
-          class="photos-toolbar__btn"
+          class="photos-toolbar__btn photos-toolbar__btn--standalone"
           :disabled="uploadLoading || deleteLoading"
           @click="openFilePicker"
         >
-          {{ uploadLoading ? 'Upload…' : 'Ajouter des photos' }}
+          {{ uploadLoading ? 'Upload…' : 'Parcourir les fichiers' }}
         </button>
         <input
           ref="fileInputRef"
@@ -350,11 +419,42 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.photos-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 0.75rem;
+.photos-dropzone {
+  margin: 0 0 1rem;
+  padding: 1.35rem 1rem;
+  border: 2px dashed #c5cae8;
+  border-radius: 12px;
+  background: #f9faff;
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.photos-dropzone--active {
+  border-color: #4a5fc9;
+  background: #eef1ff;
+}
+
+.photos-dropzone__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2e2e3a;
+}
+
+.photos-dropzone__hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  color: #6b6b78;
+}
+
+.photos-dropzone__or {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: #9a9aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .photos-toolbar__input {
@@ -377,6 +477,10 @@ onMounted(() => {
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
+}
+
+.photos-toolbar__btn--standalone {
+  margin-left: 0;
 }
 
 .photos-toolbar__btn:hover {
