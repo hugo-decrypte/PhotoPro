@@ -2,6 +2,7 @@
 
 use Psr\Container\ContainerInterface;
 
+use photopro\api\actions\PatchPasswordAction;
 use photopro\api\actions\PostAuthAction;
 use photopro\api\actions\PostAuthNewUserAction;
 use photopro\api\actions\PostAuthRefreshAction;
@@ -34,6 +35,13 @@ return [
 
     ValidateTokenAction::class => function (ContainerInterface $c) {
         return new ValidateTokenAction($c->get(AuthnProviderInterface::class));
+    },
+
+    PatchPasswordAction::class => function (ContainerInterface $c) {
+        return new PatchPasswordAction(
+            $c->get(AuthnProviderInterface::class),
+            $c->get(AuthnServiceInterface::class),
+        );
     },
 
     // service

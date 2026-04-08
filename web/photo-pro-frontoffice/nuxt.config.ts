@@ -23,11 +23,11 @@ export default defineNuxtConfig({
     },
   },
 
-css: [
+  css: [
     'vuetify/styles',
     '@mdi/font/css/materialdesignicons.css',
     '~/assets/css/main.css'
-    ],
+  ],
 
   runtimeConfig: {
     dbHost: '',
@@ -35,6 +35,11 @@ css: [
     dbUser: '',
     dbPassword: '',
     dbName: '',
+    photoDbHost: '',
+    photoDbPort: '',
+    photoDbUser: '',
+    photoDbPassword: '',
+    photoDbName: '',
     authApiUrl: '',
     galleryApiUrl: '',
     public: {

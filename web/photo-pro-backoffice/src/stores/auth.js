@@ -3,6 +3,15 @@ import { defineStore } from 'pinia'
 
 const STORAGE_KEY = 'photopro_auth'
 
+function pseudoFromEmail(email) {
+  const normalized = String(email || '').trim()
+  if (!normalized) {
+    return ''
+  }
+  const [localPart] = normalized.split('@')
+  return String(localPart || '').trim()
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const token = ref('')
   const refreshToken = ref('')
@@ -16,13 +25,17 @@ export const useAuthStore = defineStore('auth', () => {
     if (pseudo) {
       return pseudo
     }
+    const emailPseudo = pseudoFromEmail(user.value?.email)
+    if (emailPseudo) {
+      return emailPseudo
+    }
     const firstName = String(user.value?.firstName || '').trim()
     const lastName = String(user.value?.lastName || '').trim()
     const fullName = `${firstName} ${lastName}`.trim()
     if (fullName) {
       return fullName
     }
-    return 'Pseudo'
+    return 'Utilisateur'
   })
 
   function loadFromStorage() {
@@ -41,7 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
           ? {
               id: String(u.id),
               email: String(u.email || ''),
-              pseudo: String(u.pseudo || ''),
+              pseudo: String(u.pseudo || pseudoFromEmail(u.email)),
               firstName: String(u.firstName || ''),
               lastName: String(u.lastName || ''),
             }
@@ -77,7 +90,9 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = {
         id: incomingId,
         email: String(profile.email || ''),
-        pseudo: String(profile.pseudo || profile.user_name || currentPseudo),
+        pseudo: String(
+          profile.pseudo || profile.user_name || currentPseudo || pseudoFromEmail(profile.email),
+        ),
         firstName: String(profile.first_name || profile.firstName || ''),
         lastName: String(profile.name || profile.lastName || ''),
       }

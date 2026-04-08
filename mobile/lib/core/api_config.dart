@@ -1,3 +1,3 @@
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:6080';
+  static const String baseUrl = 'http://localhost:6083';
 }
