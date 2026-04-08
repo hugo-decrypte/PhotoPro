@@ -25,7 +25,7 @@ class PDOAuthRepository implements AuthRepositoryInterface
     {
         try {
             $stmt = $this->pdo->prepare('
-            SELECT id, email, password_hash as password
+            SELECT id, email, password_hash as password, pseudo, first_name, name
             FROM photographer 
             WHERE email = :email');
             $stmt->execute(['email' => $email]);
@@ -77,7 +77,7 @@ class PDOAuthRepository implements AuthRepositoryInterface
     public function getById(string $id): User {
         try {
             $stmt = $this->pdo->prepare('
-            SELECT id, email, password_hash as password
+            SELECT id, email, password_hash as password, pseudo, first_name, name
             FROM photographer 
             WHERE id = :id');
             $stmt->execute(['id' => $id]);

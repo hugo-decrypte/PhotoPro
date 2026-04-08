@@ -47,7 +47,8 @@ class PostAuthAction extends AbstractAction
                 'refresh_expires_in' => JWTManager::REFRESH_TOKEN_DURATION,
                 'user' => [
                     'id' => $authDTO->getId(),
-                    'email' => $authDTO->getEmail()
+                    'email' => $authDTO->getEmail(),
+                    'pseudo' => $authDTO->getPseudo()
                 ]
             ];
 
