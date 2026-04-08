@@ -13,4 +13,6 @@ interface AuthnServiceInterface{
     public function byCredentials(CredentialsDTO $credentials): AuthDTO;
 
     public function getUser(string $id): UserDTO;
+
+    public function changePassword(string $userId, string $currentPassword, string $newPassword): void;
 }

@@ -41,6 +41,9 @@ return function(App $app): App {
         $group->delete('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':deletePhoto');
     })->add(AuthMiddleware::class);
 
+    $app->patch('/password', GatewayAuthGeneriqueAction::class . ':changePassword')
+        ->add(AuthMiddleware::class);
+
     // CORS Catch-All
     $app->options('/{routes:.+}', function ($request, $response) {
         return $response;

@@ -90,4 +90,20 @@ class PDOAuthRepository implements AuthRepositoryInterface
         }
         return User::fromArray($userData);
     }
+
+    public function updatePasswordHash(string $userId, string $passwordHash): void
+    {
+        try {
+            $stmt = $this->pdo->prepare('UPDATE photographer SET password_hash = :password_hash WHERE id = :id');
+            $stmt->execute([
+                'id' => $userId,
+                'password_hash' => $passwordHash,
+            ]);
+            if ($stmt->rowCount() === 0) {
+                throw new EntityNotFoundException("User $userId not found");
+            }
+        } catch (\PDOException $e) {
+            throw new DatabaseException($e->getMessage());
+        }
+    }
 }
