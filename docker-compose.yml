@@ -54,7 +54,7 @@ services:
       - NUXT_PHOTO_DB_NAME=${PHOTO_DB_NAME}
 
       # ✅ S3 (fix)
-      - NUXT_PUBLIC_S3_ENDPOINT=http://seaweed-s3:8333
+      - NUXT_PUBLIC_S3_ENDPOINT=http://docketu.iutnc.univ-lorraine.fr:56070/
 
   app-gateway-gestion:
     build:
