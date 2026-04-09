@@ -22,19 +22,27 @@ $photoMappings = [
     'eloi/winter2.jpg' => 'uploads/65b078c4-f43e-4289-ad40-0d9dff2d904f.jpg',
     'eloi/winter3.jpg' => 'uploads/9ac1363d-5a63-4f8a-837f-4f37763e15a7.jpg',
     'eloi/winter4.jpg' => 'uploads/8e369475-c93f-467d-a429-fb77e2aa069e.jpg',
+    'eloi/winter5.jpg' => 'uploads/b40d8fb3-6adc-4400-a8e7-5df530f3f21f.jpg',
     
     // Photos hugo (sea)
     'hugo/sea1.jpg' => 'uploads/e9286ace-b18e-4a55-804c-f14d53f36f2e.jpg',
     'hugo/sea3.jpg' => 'uploads/1ad9f6d5-0bfd-40b7-a0ce-d078db5cdc45.jpg',
+    'hugo/sea2.jpg' => 'uploads/b3c24058-d613-4117-89e8-e59305d17bb2.jpg',
+    'hugo/sea5.jpg' => 'uploads/a153e7e7-4967-4028-8d7e-e66f7ae6f9b7.jpg',
     
     // Photos tuline (forest)
     'tuline/forest1.jpg' => 'uploads/40d8354a-3e32-4550-90e0-0e046be0ef74.jpg',
     'tuline/forest2.jpg' => 'uploads/b3b5cdfe-ae49-41cb-a79b-93b11663933a.jpg',
     'tuline/forest3.jpg' => 'uploads/654f4937-dd0f-4847-9e59-9b8aa747aab9.jpg',
+    'tuline/forest4.jpg' => 'uploads/7cdf4761-7d57-4e77-ae9e-b30638e1a883.jpg',
+    'tuline/forest5.jpg' => 'uploads/0fcc3f1f-a3ce-4afa-b334-2337c61c2c53.jpg',
     
     // Photos vivien (desert)
     'vivien/desert1.jpg' => 'uploads/2ab11251-e3df-464f-89bc-b6e87888b6aa.jpg',
     'vivien/desert2.jpg' => 'uploads/5d75fca9-fb17-4f77-a99f-fbcfe7889cdf.jpg',
+    'vivien/desert4.jpg' => 'uploads/3ec3a509-67a5-43ba-868e-81b03bff05ee.jpg',
+    'vivien/desert5.jpg' => 'uploads/0294e6f3-6040-4117-ac29-ca789b9c2367.jpg',
+    'vivien/desert6.jpg' => 'uploads/27f19a50-dce6-4199-8861-f2f29f32c245.jpg',
 
     'bob/pont1.jpg' => 'uploads/b694dd61-1008-4b7e-985d-4ed1cafe15c6.jpg',
 
