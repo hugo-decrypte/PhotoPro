@@ -29,11 +29,11 @@ class CreateGalleryValidationMiddleware
             throw new HttpBadRequestException($request, 'Données invalides : ' . $e->getFullMessage(), $e);
         }
 
-        // Si galerie privée → champs supplémentaires obligatoires
+        // Si galerie privée → email client obligatoire.
+        // Le code d'acces est genere automatiquement dans le service metier.
         if ($data['type'] === 'private') {
             try {
-                v::key('access_code', v::stringType()->notEmpty()->length(4, 50))
-                    ->key('client_email', v::email())
+                v::key('client_email', v::email())
                     ->assert($data);
             } catch (NestedValidationException $e) {
                 throw new HttpBadRequestException(
