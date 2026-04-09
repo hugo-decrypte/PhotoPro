@@ -212,21 +212,27 @@ const { data: commentsData, refresh } = await useAsyncData(
     () => $fetch(`/api/galleries/${route.params.id}/comments`)
 )
 const comments = computed(() => (commentsData.value as any)?.data ?? [])
-const newComment = ref({ author_name: '', content: '' })
+const newComment = ref({
+  author_name: '',
+  content: '',
+  photo_id: '00000000-0000-0000-0000-000000000000' // UUID vide ou fixe
+});
 
 async function submitComment() {
-  if (!newComment.value.content.trim()) return
+  if (!newComment.value.content.trim()) return;
   try {
-    await $fetch(`/api/galleries/${route.params.id}/comments`, {
+    await $fetch(`/api/galleries/${route.params.id}/photos/${newComment.value.photo_id}/comments`, {
       method: 'POST',
       body: newComment.value,
-    })
-    newComment.value = { author_name: '', content: '' }
-    await refresh()
+    });
+    newComment.value = { author_name: '', content: '', photo_id: '00000000-0000-0000-0000-000000000000' };
+    await refresh();
   } catch {
-    alert('Erreur lors de l\'envoi du commentaire')
+    alert('Erreur lors de l\'envoi du commentaire');
   }
 }
+
+
 </script>
 
 <style scoped>
