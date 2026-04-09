@@ -110,23 +110,7 @@
             </div>
           </div>
         </div>
-        <p v-else class="no-comments">Soyez le premier à commenter.</p>
-
-        <div class="comment-form">
-          <h3 class="form-title">Laisser un commentaire</h3>
-          <input
-              v-model="newComment.author_name"
-              class="form-input"
-              placeholder="Votre nom (optionnel)"
-          />
-          <textarea
-              v-model="newComment.content"
-              class="form-textarea"
-              placeholder="Votre commentaire..."
-              rows="4"
-          />
-          <button class="submit-btn" @click="submitComment">Publier</button>
-        </div>
+        <p v-else class="no-comments">Aucun commentaire.</p>
       </div>
     </div>
 
