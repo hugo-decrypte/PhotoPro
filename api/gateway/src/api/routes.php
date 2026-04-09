@@ -24,6 +24,8 @@ return function(App $app): App {
 
     $app->get('/photos/{id_photo}', GatewayPhotoGeneriqueAction::class . ':getPhoto');
 
+    $app->post('/galeries/{id}/photos/{photoId}/comments', GatewayGalleryGeneriqueAction::class . ':addComment');
+
 
     // Gallery (protégées JWT)
     $app->group('', function ($group) {
@@ -32,7 +34,6 @@ return function(App $app): App {
         $group->patch('/galeries/{id}/publish', GatewayGalleryGeneriqueAction::class . ':publishGallery');
         $group->patch('/galeries/{id}/unpublish', GatewayGalleryGeneriqueAction::class . ':unpublishGallery');
         $group->post('/galeries/{id}/photos', GatewayGalleryGeneriqueAction::class . ':addPhotosToGallery');
-        $group->post('/galeries/{id}/photos/{photoId}/comments', GatewayGalleryGeneriqueAction::class . ':addComment');
     })->add(AuthMiddleware::class);
 
     // Photo (protégées JWT)

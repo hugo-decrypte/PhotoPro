@@ -18,7 +18,7 @@ class CommentsScreen extends StatefulWidget {
 
 class _CommentsScreenState extends State<CommentsScreen> {
   final service = GalleryService();
-  final authorController = TextEditingController();
+  // Suppression du champ auteur, anonymat obligatoire
   final contentController = TextEditingController();
 
   List<CommentModel> comments = [];
@@ -62,17 +62,13 @@ class _CommentsScreenState extends State<CommentsScreen> {
       sending = true;
       error = '';
     });
-try {
+    try {
       await service.addComment(
         galleryId: widget.galleryId,
         photoId: widget.photoId,
-        authorName: authorController.text.trim().isEmpty
-            ? null
-            : authorController.text.trim(),
         content: contentController.text.trim(),
       );
 
-      authorController.clear();
       contentController.clear();
       await loadComments();
     } catch (e) {
@@ -90,7 +86,6 @@ try {
 
   @override
   void dispose() {
-    authorController.dispose();
     contentController.dispose();
     super.dispose();
   }
@@ -116,45 +111,46 @@ try {
                             final comment = comments[index];
                             return Card(
                               child: ListTile(
-                                title: Text(
-                                        (comment.authorName != null &&
-                                      comment.authorName!.trim().isNotEmpty)
-                                    ? comment.authorName!
-                                      : 'Anonyme',
-                                ),
-                                subtitle: Text(comment.content),
+                                title: Text(comment.content),
+                                subtitle: comment.authorName != null
+                                    ? Text(comment.authorName!)
+                                    : null,
                               ),
                             );
                           },
                         ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: authorController,
-              decoration: const InputDecoration(
-                labelText: 'Nom (optionnel)',
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: contentController,
-              maxLines: 3,
+              minLines: 2,
+              maxLines: 4,
               decoration: const InputDecoration(
                 labelText: 'Votre commentaire',
               ),
             ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: sending ? null : sendComment,
-              child: Text(sending ? 'Envoi...' : 'Ajouter le commentaire'),
-            ),
-            if (error.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                error,
-                style: const TextStyle(color: Color(0xFFD93B3B)),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: sending ? null : sendComment,
+                child: sending
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Ajouter le commentaire'),
               ),
-            ],
+            ),
+            if (error.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  error,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
           ],
         ),
       ),
