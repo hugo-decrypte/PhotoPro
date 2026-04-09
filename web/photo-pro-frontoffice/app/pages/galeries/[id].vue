@@ -114,6 +114,7 @@
       </div>
     </div>
 
+
     <!-- LIGHTBOX -->
     <Teleport to="body">
       <div v-if="lightboxOpen" class="lightbox" @click.self="lightboxOpen = false">

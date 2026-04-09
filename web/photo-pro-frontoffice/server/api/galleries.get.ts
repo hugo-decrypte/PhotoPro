@@ -11,6 +11,7 @@ export default defineEventHandler(async () => {
         database: config.dbName,
     })
 
+
     const photoClient = new pg.Client({
         host: config.photoDbHost,
         port: Number(config.photoDbPort),

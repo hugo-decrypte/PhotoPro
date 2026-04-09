@@ -150,6 +150,7 @@ async function goToPrivate() {
   } finally {
     dialogLoading.value = false
   }
+
 }
 </script>
 
