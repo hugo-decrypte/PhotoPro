@@ -304,7 +304,6 @@ onMounted(() => {
           </div>
 
           <p v-if="isPrivate" class="gallery-edit-form__hint">
-            Le code d'accès privé est généré automatiquement côté backend.
           </p>
 
           <div class="gallery-edit-form__actions">

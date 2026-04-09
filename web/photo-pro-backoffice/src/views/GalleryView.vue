@@ -250,7 +250,6 @@ onMounted(() => {
                       : 'Publier'
                 }}
               </button>
-              <small class="gallery-card__hint">Les erreurs backend sont affichées en haut de la page.</small>
             </div>
           </div>
         </article>
