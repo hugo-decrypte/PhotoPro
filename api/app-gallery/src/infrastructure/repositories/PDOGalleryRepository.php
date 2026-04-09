@@ -306,6 +306,7 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
         $this->pdo->beginTransaction();
 
         try {
+            $firstPhotoId = null;
             $stmt = $this->pdo->prepare("
                 INSERT INTO gallery_photo (gallery_id, photo_id, \"order\", added_at)
                 VALUES (:gallery_id, :photo_id, :order, NOW())
@@ -313,11 +314,28 @@ class PDOGalleryRepository implements GalleryRepositoryInterface
                 DO UPDATE SET \"order\" = EXCLUDED.\"order\"
             ");
 
-            foreach ($photos as $photo) {
+            foreach ($photos as $index => $photo) {
                 $stmt->execute([
                     'gallery_id' => $galleryId,
                     'photo_id' => $photo['photo_id'],
                     'order' => $photo['order'] ?? 0,
+                ]);
+
+                if ($index === 0) {
+                    $firstPhotoId = $photo['photo_id'];
+                }
+            }
+
+            if ($firstPhotoId !== null) {
+                $setCoverStmt = $this->pdo->prepare("
+                    UPDATE gallery
+                    SET cover_photo_id = :cover_photo_id
+                    WHERE id = :gallery_id
+                      AND cover_photo_id IS NULL
+                ");
+                $setCoverStmt->execute([
+                    'cover_photo_id' => $firstPhotoId,
+                    'gallery_id' => $galleryId,
                 ]);
             }
 
