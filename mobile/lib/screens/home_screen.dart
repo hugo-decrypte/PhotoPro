@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/gallery_service.dart';
 import 'gallery_screen.dart';
+import '../models/gallery.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,23 +15,40 @@ class _HomeScreenState extends State<HomeScreen> {
   final codeController = TextEditingController();
   final service = GalleryService();
 
+  List<Gallery> publicGalleries = [];
   String error = '';
-  bool loading = false;
+  bool loading = true;
 
-  Future<void> access() async {
+  @override
+  void initState() {
+    super.initState();
+    loadPublicGalleries();
+  }
+
+  Future<void> loadPublicGalleries() async {
     setState(() {
       loading = true;
       error = '';
     });
-
     try {
-      final gallery = await service.accessPrivateGallery(
-        idController.text.trim(),
-        codeController.text.trim(),
-      );
+      publicGalleries = await service.getPublicGalleries();
+    } catch (e) {
+      error = 'Erreur lors du chargement des galeries publiques';
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
 
+  void accessPrivateGallery() async {
+    final id = idController.text.trim();
+    final code = codeController.text.trim();
+    if (id.isEmpty || code.isEmpty) return;
+    setState(() => loading = true);
+    try {
+      final gallery = await service.accessPrivateGallery(id, code);
       if (!mounted) return;
-
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -39,20 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } catch (e) {
       setState(() {
-        error = "Erreur d'accès : $e";
+        error = "ID ou code invalide, ou galerie privée introuvable";
       });
     } finally {
-      if (mounted) {
-        setState(() {
-          loading = false;
-        });
-      }
+      setState(() => loading = false);
     }
   }
 
   @override
   void dispose() {
-    idController.dispose();
     codeController.dispose();
     super.dispose();
   }
@@ -60,38 +73,68 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PhotoPro'),
-      ),
+      appBar: AppBar(title: const Text('PhotoPro')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text('Galeries publiques', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            Expanded(
+              child: loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : publicGalleries.isEmpty
+                      ? const Center(child: Text('Aucune galerie publique'))
+                      : ListView.builder(
+                          itemCount: publicGalleries.length,
+                          itemBuilder: (context, index) {
+                            final gallery = publicGalleries[index];
+                            return ListTile(
+                              title: Text(gallery.title),
+                              subtitle: Text(gallery.description ?? ''),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => GalleryScreen(gallery: gallery),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+            ),
+            const SizedBox(height: 16),
+            Text('Accéder à une galerie privée', style: Theme.of(context).textTheme.titleMedium),
             TextField(
               controller: idController,
               decoration: const InputDecoration(
-                labelText: 'Gallery ID',
+                labelText: 'ID de la galerie',
               ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: codeController,
-              decoration: const InputDecoration(
-                labelText: 'Code',
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: loading ? null : access,
-              child: Text(loading ? 'Chargement...' : 'Accéder'),
-            ),
-            const SizedBox(height: 12),
-            if (error.isNotEmpty)
-              Text(
-                error,
-                style: const TextStyle(
-                  color: Color(0xFFD93B3B),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: codeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Code d\'accès',
+                    ),
+                  ),
                 ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: loading ? null : accessPrivateGallery,
+                  child: const Text('Valider'),
+                ),
+              ],
+            ),
+            if (error.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(error, style: const TextStyle(color: Colors.red)),
               ),
           ],
         ),

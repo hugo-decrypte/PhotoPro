@@ -3,6 +3,8 @@ import pg from 'pg'
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
     const config = useRuntimeConfig()
+    const query = getQuery(event)
+    const code = query.code
 
     const galleryClient = new pg.Client({
         host: config.dbHost,
@@ -23,12 +25,12 @@ export default defineEventHandler(async (event) => {
     try {
         await galleryClient.connect()
 
-        // 🔹 GALERIE
+        // GALERIE
         const galleryResult = await galleryClient.query(`
-      SELECT id, title, description, type, status, cover_photo_id, published_at
-      FROM gallery
-      WHERE id = $1 AND status = 'PUBLISHED'
-    `, [id])
+          SELECT id, title, description, type, status, cover_photo_id, published_at
+          FROM gallery
+          WHERE id = $1 AND status = 'PUBLISHED'
+        `, [id])
 
         if (galleryResult.rows.length === 0) {
             throw createError({ statusCode: 404, message: 'Galerie introuvable' })
@@ -37,16 +39,27 @@ export default defineEventHandler(async (event) => {
         let gallery = galleryResult.rows[0]
 
         if (gallery.type === 'PRIVATE') {
-            return { gallery, photos: null, private: true }
+            if (!code) {
+                return { gallery, photos: null, private: true }
+            }
+
+            const privateCheck = await galleryClient.query(
+                'SELECT access_code FROM private_gallery_access WHERE gallery_id = $1 AND access_code = $2',
+                [id, code]
+            )
+
+            if (privateCheck.rows.length === 0) {
+                throw createError({ statusCode: 403, message: 'Code invalide' })
+            }
         }
 
-        // 🔹 PHOTOS (liaison)
+        // LIAISONS PHOTOS
         const gpResult = await galleryClient.query(`
-      SELECT photo_id, "order"
-      FROM gallery_photo
-      WHERE gallery_id = $1
-      ORDER BY "order" ASC
-    `, [id])
+          SELECT photo_id, "order"
+          FROM gallery_photo
+          WHERE gallery_id = $1
+          ORDER BY "order" ASC
+        `, [id])
 
         if (gpResult.rows.length === 0) {
             return { gallery, photos: [], private: false }
@@ -54,7 +67,7 @@ export default defineEventHandler(async (event) => {
 
         const photoIds = gpResult.rows.map(r => r.photo_id)
 
-        // 🔹 DB PHOTO
+        // DB PHOTO
         await photoClient.connect()
 
         const photosResult = await photoClient.query(`
@@ -65,22 +78,20 @@ export default defineEventHandler(async (event) => {
 
         const photoMap = new Map(photosResult.rows.map(p => [p.id, p]))
 
-        console.log('Photos from DB:', photosResult.rows);
-
-        // 🔥 SAFE MERGE
+        // FUSION ET URLS
         const photos = gpResult.rows
             .map(gp => {
-                const photo = photoMap.get(gp.photo_id)
-                if (!photo) return null
+                const photoData = photoMap.get(gp.photo_id)
+                if (!photoData) return null
                 return {
-                    ...photo,
+                    ...photoData,
                     order: gp.order,
-                    url: `${config.public.s3Endpoint}/${photo.s3_key}`
+                    url: `${config.public.s3Endpoint}/${photoData.s3_key}`
                 }
             })
             .filter(Boolean)
 
-        // 🔹 COVER PHOTO URL
+        // COVER URL
         if (gallery.cover_photo_id) {
             const coverPhoto = photoMap.get(gallery.cover_photo_id)
             if (coverPhoto) {
@@ -96,11 +107,11 @@ export default defineEventHandler(async (event) => {
 
         return { gallery, photos, private: false }
 
-    } catch (err) {
+    } catch (err: any) {
         console.error('API ERROR:', err)
         throw createError({
-            statusCode: 500,
-            message: 'Erreur serveur galerie'
+            statusCode: err.statusCode || 500,
+            message: err.message || 'Erreur serveur galerie'
         })
     } finally {
         await galleryClient.end().catch(() => {})
